@@ -78,7 +78,6 @@ Fire Barrel
 Funky Jet
 Hacha Mecha Figher
 Monster Slider
-Narc (Via Williams Speedups)
 Rogha Armor Force
 Snowboard Championship
 Street Fighter (With Added Speedups)
@@ -115,8 +114,6 @@ Thunder Dragon
 
 Improvements
 
-More Midway speedups added should give a nice boost to all the games
-Added Williams sound core with the speedhacks improves performance in the Midway T-Unit and Y-Unit games
 Added sound support to Fire Shark and Vimana
 Added sound support for Cosmic Alien
 Added BritneysPAIRS improved sample support to Donkey Kong and Donkey kong JR
