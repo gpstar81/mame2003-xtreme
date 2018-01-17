@@ -3347,6 +3347,7 @@ BOMULEUL CHAJARA SEGA ST-V  1997/04/11
 	DRIVER( spbactnj )	/* 9002 - (c) 1991 Tecmo */
 	DRIVER( fstarfrc )	/* (c) 1992 Tecmo */
 	DRIVER( ginkun )	/* (c) 1995 Tecmo */
+	DRIVER( riot )	        /* (c) 1992 NMK */
 	DRIVER( deroon )
 	DRIVER( tkdensho )
 
