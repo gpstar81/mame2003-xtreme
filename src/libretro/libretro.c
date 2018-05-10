@@ -5,6 +5,7 @@
 #include "mame.h"
 #include "driver.h"
 #include "state.h"
+#include "log.h"
 
 // Wrapper to build MAME on 3DS. It doesn't have stricmp.
 #ifdef _3DS
@@ -115,6 +116,7 @@ static int getDriverIndex(const char* aPath)
     {
        if(strcmp(driverName, drivers[i]->name) == 0)
        {
+          options.romset_filename_noext = strdup(driverName);         
           if (log_cb)
              log_cb(RETRO_LOG_INFO, "Found game: %s [%s].\n", driverName, drivers[i]->name);
           return i;

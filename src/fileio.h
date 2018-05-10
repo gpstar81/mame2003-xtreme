@@ -10,8 +10,10 @@
 #define FILEIO_H
 
 #include <stdarg.h>
+#include <stdio.h>
 #include "osdepend.h"
 #include "hash.h"
+#include "log.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -84,6 +86,13 @@ UINT64 mame_ftell(mame_file *file);
 
 int mame_fputs(mame_file *f, const char *s);
 int mame_vfprintf(mame_file *f, const char *fmt, va_list va);
+
+/***************************************************************************
+	spawn_bootstrap_nvram
+  creates a new nvram file for the current romset (as specified in
+  options.romset_filename_noext) using bootstrap_nvram as the source.
+***************************************************************************/
+mame_file *spawn_bootstrap_nvram(unsigned char const *bootstrap_nvram, unsigned nvram_length);
 
 #ifdef __GNUC__
 int CLIB_DECL mame_fprintf(mame_file *f, const char *fmt, ...)
