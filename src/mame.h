@@ -188,6 +188,8 @@ struct GameOptions
 	mame_file *	record;			/* handle to file to record input to */
 	mame_file *	playback;		/* handle to file to playback input from */
 	mame_file *	language_file;	/* handle to file for localization */
+  
+  char *romset_filename_noext;
 
 	int		mame_debug;		/* 1 to enable debugging */
 	int		cheat;			/* 1 to enable cheating */

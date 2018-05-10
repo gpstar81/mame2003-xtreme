@@ -85,7 +85,29 @@ static NVRAM_HANDLER( rungun )
 			EEPROM_load(file);
 		}
 		else
-			init_eeprom_count = 10;
+    {   
+      static const unsigned char rungun_bootstrap_nvram[] = {
+          4, 20,251,235,146, 71, 69, 65, 65,  0, 21,  3,  7,  3,  0,  0,  0,  0,
+          0,  0,  0,  0,  0, 30,  0, 21, 32,  0,  1,  0,  0,  0,  0,  0,  0,  0,
+          0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+          0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+          0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+          0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+          0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+          0,  0,
+      }; 
+      
+      file = spawn_bootstrap_nvram(rungun_bootstrap_nvram, sizeof(rungun_bootstrap_nvram));
+      if(file)
+      {
+        init_eeprom_count = 0;
+        EEPROM_load(file);
+      }
+      else
+      {
+        init_eeprom_count = 10;
+      }
+    }
 	}
 }
 
