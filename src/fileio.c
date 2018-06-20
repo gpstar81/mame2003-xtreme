@@ -101,7 +101,6 @@ mame_file *mame_fopen(const char *gamename, const char *filename, int filetype, 
 		case FILETYPE_IMAGE:
 #endif
 		case FILETYPE_SAMPLE:
-		case FILETYPE_HIGHSCORE_DB:
 		case FILETYPE_ARTWORK:
 		case FILETYPE_HISTORY:
 		case FILETYPE_LANGUAGE:
@@ -185,7 +184,7 @@ mame_file *mame_fopen(const char *gamename, const char *filename, int filetype, 
 
 		/* highscore database */
 		case FILETYPE_HIGHSCORE_DB:
-			return generic_fopen(filetype, NULL, filename, 0, FILEFLAG_OPENREAD);
+			return generic_fopen(filetype, NULL, filename, 0, openforwrite ? FILEFLAG_OPENWRITE : FILEFLAG_OPENREAD);
 
 		/* config files */
 		case FILETYPE_CONFIG:
