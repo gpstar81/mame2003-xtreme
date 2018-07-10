@@ -485,6 +485,7 @@ int AuditSampleSet (int game, tMissingSample **audit)
 	mame_file *f;
 	const char **samplenames, *sharedname;
 	int exist;
+	int exist_flac;
 	static const struct GameDriver *gamedrv;
 	int j;
 	int count = 0;
@@ -526,8 +527,15 @@ int AuditSampleSet (int game, tMissingSample **audit)
 	if (!exist && skipfirst)
 		exist = mame_faccess (sharedname, FILETYPE_SAMPLE);
 
+	/* try searching for flac samples */
+	exist_flac = mame_faccess (gamedrv->name, FILETYPE_SAMPLE_FLAC);
+		
+	// try shared flac samples
+	if (!exist_flac && skipfirst)
+		exist_flac = mame_faccess (sharedname, FILETYPE_SAMPLE_FLAC);
+
 	/* if still not found, we're done */
-	if (!exist)
+	if (!exist && !exist_flac)
 		return -1;
 
 	/* allocate missing samples list (if necessary) */
@@ -544,10 +552,27 @@ int AuditSampleSet (int game, tMissingSample **audit)
 		/* skip empty definitions */
 		if (strlen (samplenames[j]) == 0)
 			continue;
-		f = mame_fopen (gamedrv->name, samplenames[j], FILETYPE_SAMPLE, 0);
-		if (f == NULL && skipfirst)
-			f = mame_fopen (sharedname, samplenames[j], FILETYPE_SAMPLE, 0);
 
+		// Open flac samples first.
+		if(exist_flac) {
+			f = mame_fopen (gamedrv->name, samplenames[j], FILETYPE_SAMPLE_FLAC, 0);
+			if (f == NULL && skipfirst)
+				f = mame_fopen (sharedname, samplenames[j], FILETYPE_SAMPLE_FLAC, 0);
+
+			if(!f) {
+				// Open wav samples as fallback.
+				f = mame_fopen (gamedrv->name, samplenames[j], FILETYPE_SAMPLE, 0);
+				if (f == NULL && skipfirst)
+					f = mame_fopen (sharedname, samplenames[j], FILETYPE_SAMPLE, 0);
+			}
+		}
+		else {
+			// Open wav samples as fallback.
+			f = mame_fopen (gamedrv->name, samplenames[j], FILETYPE_SAMPLE, 0);
+			if (f == NULL && skipfirst)
+				f = mame_fopen (sharedname, samplenames[j], FILETYPE_SAMPLE, 0);
+		}
+		
 		if (f)
 			mame_fclose(f);
 		else

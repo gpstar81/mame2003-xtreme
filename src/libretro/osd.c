@@ -213,7 +213,7 @@ void osd_sound_enable(int enable)
 File I/O
 
 ******************************************************************************/
-static const char* const paths[] = { "raw", "rom", "image", "diff", "samples", "artwork", "nvram", "hi", "hsdb", "cfg", "inp", "memcard", "snap", "history", "cheat", "lang", "ctrlr", "ini" };
+static const char* const paths[] = { "raw", "rom", "image", "diff", "samples", "samples", "artwork", "nvram", "hi", "hsdb", "cfg", "inp", "memcard", "snap", "history", "cheat", "lang", "ctrlr", "ini" };
 
 struct _osd_file
 {
@@ -285,18 +285,18 @@ osd_file *osd_fopen(int pathtype, int pathindex, const char *filename, const cha
          strcpy(currDir, romDir);
          break;
       case 3:  /* IMAGE DIFF */
-      case 6:  /* NVRAM */
-      case 7:  /* HIGHSCORE */
-      case 9:  /* CONFIG */
-      case 10: /* INPUT LOG */
-      case 11: /* MEMORY CARD */
-      case 12: /* SCREENSHOT */
+      case 7:  /* NVRAM */
+      case 8:  /* HIGHSCORE */
+      case 10:  /* CONFIG */
+      case 11: /* INPUT LOG */
+      case 12: /* MEMORY CARD */
+      case 13: /* SCREENSHOT */
          /* user generated content goes in Retroarch save directory */
          snprintf(currDir, 1024, "%s%c%s%c%s", saveDir, slash, parentDir, slash, paths[pathtype]);
          break;
-      case 8:  /* HIGHSCORE DB */
-      case 13: /* HISTORY */
-      case 14: /* CHEAT */
+      case 9:  /* HIGHSCORE DB */
+      case 14: /* HISTORY */
+      case 15: /* CHEAT */
          /* .dat files go directly in the Retroarch system directory */
          snprintf(currDir, 1024, "%s%c%s", systemDir, slash, parentDir);
          break;

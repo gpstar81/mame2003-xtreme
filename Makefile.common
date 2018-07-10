@@ -1,9 +1,10 @@
 LIBRETRO_COMM_DIR := $(CORE_DIR)/libretro/libretro-common
 
-INCFLAGS := -I$(CORE_DIR) \
+INCFLAGS := -DFLAC__NO_ASM -DHAVE_INTTYPES_H -DHAVE_ICONV -DHAVE_LANGINFO_CODESET -DHAVE_SOCKLEN_T -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -I$(CORE_DIR) \
 				-I$(CORE_DIR)/includes \
 				-I$(CORE_DIR)/libretro \
 				-I$(CORE_DIR)/libretro/includes/zlib \
+				-I$(CORE_DIR)/lib/libflac/include -c \
 				-I$(CORE_DIR)/cpu/m68000
 
 ifneq (,$(findstring msvc2003,$(platform)))
@@ -2607,5 +2608,20 @@ SOURCES_C += $(CORE_DIR)/../deps/zlib/adler32.c \
 				 $(CORE_DIR)/../deps/zlib/uncompr.c \
 				 $(CORE_DIR)/../deps/zlib/zutil.c \
 				 $(CORE_DIR)/../deps/zlib/ioapi.c \
-				 $(CORE_DIR)/../deps/zlib/unzip.c
+				 $(CORE_DIR)/../deps/zlib/unzip.c \
+				 $(CORE_DIR)/lib/libflac/libflac/bitmath.c \
+				 $(CORE_DIR)/lib/libflac/libflac/bitreader.c \
+				 $(CORE_DIR)/lib/libflac/libflac/bitwriter.c \
+				 $(CORE_DIR)/lib/libflac/libflac/cpu.c \
+				 $(CORE_DIR)/lib/libflac/libflac/crc.c \
+				 $(CORE_DIR)/lib/libflac/libflac/fixed.c \
+				 $(CORE_DIR)/lib/libflac/libflac/float.c \
+				 $(CORE_DIR)/lib/libflac/libflac/format.c \
+				 $(CORE_DIR)/lib/libflac/libflac/lpc.c \
+				 $(CORE_DIR)/lib/libflac/libflac/md5.c \
+				 $(CORE_DIR)/lib/libflac/libflac/memory.c \
+				 $(CORE_DIR)/lib/libflac/libflac/stream_decoder.c \
+				 $(CORE_DIR)/lib/libflac/libflac/stream_encoder.c \
+				 $(CORE_DIR)/lib/libflac/libflac/stream_encoder_framing.c \
+				 $(CORE_DIR)/lib/libflac/libflac/window.c
 endif

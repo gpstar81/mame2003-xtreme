@@ -384,8 +384,6 @@ struct artwork_piece
 	struct rectangle		bounds;
 };
 
-
-
 /***************************************************************************
 
 	Local variables

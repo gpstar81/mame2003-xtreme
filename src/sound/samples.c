@@ -3,7 +3,8 @@
 
 
 static int firstchannel,numchannels;
-
+int leftSampleNum;
+int rightSampleNum;
 
 /* Start one of the samples loaded from disk. Note: channel must be in the range */
 /* 0 .. Samplesinterface->channels-1. It is NOT the discrete channel to pass to */
@@ -24,23 +25,40 @@ void sample_start(int channel,int samplenum,int loop)
 		return;
 	}
 
-	if ( Machine->samples->sample[samplenum]->resolution == 8 )
-	{
-		logerror("play 8 bit sample %d, channel %d\n",samplenum,channel);
-		mixer_play_sample(firstchannel + channel,
-				Machine->samples->sample[samplenum]->data,
-				Machine->samples->sample[samplenum]->length,
-				Machine->samples->sample[samplenum]->smpfreq,
-				loop);
-	}
-	else
-	{
-		logerror("play 16 bit sample %d, channel %d\n",samplenum,channel);
-		mixer_play_sample_16(firstchannel + channel,
-				(short *) Machine->samples->sample[samplenum]->data,
-				Machine->samples->sample[samplenum]->length,
-				Machine->samples->sample[samplenum]->smpfreq,
-				loop);
+	if (Machine->samples->sample[samplenum] != NULL) {
+		if (Machine->samples->sample[samplenum]->b_decoded == 0)
+		{
+			// Lets decode this sample before playing it.
+			readsample(Machine->samples->sample[samplenum], samplenum, Machine->samples, 1, 0);
+		}
+
+		if (Machine->samples->sample[samplenum]->b_decoded == 1)
+		{
+			if (channel == 0)
+				leftSampleNum = samplenum;
+
+			if (channel == 1)
+				rightSampleNum = samplenum;
+						
+			if (Machine->samples->sample[samplenum]->resolution == 8 )
+			{
+				logerror("play 8 bit sample %d, channel %d\n",samplenum,channel);
+				mixer_play_sample(firstchannel + channel,
+						Machine->samples->sample[samplenum]->data,
+						Machine->samples->sample[samplenum]->length,
+						Machine->samples->sample[samplenum]->smpfreq,
+						loop);
+			}
+			else
+			{
+				logerror("play 16 bit sample %d, channel %d\n",samplenum,channel);
+				mixer_play_sample_16(firstchannel + channel,
+						(short *) Machine->samples->sample[samplenum]->data,
+						Machine->samples->sample[samplenum]->length,
+						Machine->samples->sample[samplenum]->smpfreq,
+						loop);
+			}
+		}
 	}
 }
 
@@ -86,6 +104,13 @@ void sample_set_volume(int channel,int volume)
 
 void sample_stop(int channel)
 {
+	int c_sample;
+
+	if (channel == 0)
+		c_sample = leftSampleNum;
+	else if (channel == 1)
+		c_sample = rightSampleNum;
+		
 	if (Machine->sample_rate == 0) return;
 	if (channel >= numchannels)
 	{
@@ -94,6 +119,20 @@ void sample_stop(int channel)
 	}
 
 	mixer_stop_sample(channel + firstchannel);
+
+	if (Machine->samples->sample[c_sample] != NULL) {
+		if (Machine->samples->sample[c_sample]->b_decoded == 1) {
+			// A non pre loaded sample, lets free from memory. Useful for devices with limited amount of RAM using large sample files.
+			if (Machine->samples->sample[c_sample]->b_h_decoded == 0)
+				readsample(Machine->samples->sample[c_sample], c_sample, Machine->samples, 0, 0);
+
+			if (channel == 0)
+				leftSampleNum = NULL;
+
+			if (channel == 1)
+				rightSampleNum = NULL;
+		}
+	}
 }
 
 int sample_playing(int channel)

@@ -101,6 +101,7 @@ mame_file *mame_fopen(const char *gamename, const char *filename, int filetype, 
 		case FILETYPE_IMAGE:
 #endif
 		case FILETYPE_SAMPLE:
+		case FILETYPE_SAMPLE_FLAC:
 		case FILETYPE_ARTWORK:
 		case FILETYPE_HISTORY:
 		case FILETYPE_LANGUAGE:
@@ -163,6 +164,10 @@ mame_file *mame_fopen(const char *gamename, const char *filename, int filetype, 
 		/* samples */
 		case FILETYPE_SAMPLE:
 			return generic_fopen(filetype, gamename, filename, 0, FILEFLAG_OPENREAD);
+
+		/* flac samples */
+		case FILETYPE_SAMPLE_FLAC:
+			return generic_fopen(filetype, gamename, filename, 0, FILEFLAG_OPENREAD);			
 
 		/* artwork files */
 		case FILETYPE_ARTWORK:
@@ -791,6 +796,10 @@ static const char *get_extension_for_filetype(int filetype)
 		case FILETYPE_SAMPLE:		/* samples */
 			extension = "wav";
 			break;
+
+		case FILETYPE_SAMPLE_FLAC:		/* samples */
+			extension = "flac";
+			break;			
 
 		case FILETYPE_ARTWORK:		/* artwork files */
 		case FILETYPE_SCREENSHOT:	/* screenshot files */
