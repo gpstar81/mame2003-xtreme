@@ -9,6 +9,11 @@ ifneq ($(GIT_VERSION)," unknown")
 	CFLAGS += -DGIT_VERSION=\"$(GIT_VERSION)\"
 endif
 
+CC="arm-linux-gnueabihf-gcc"
+CXX="arm-linux-gnueabihf-g++"
+CXX11="arm-linux-gnueabihf-g++"
+STRIP="arm-linux-gnueabihf-strip"
+
 ifeq ($(platform),)
 system_platform = unix
 platform = unix
