@@ -367,7 +367,7 @@ static struct GameSample *read_wav_sample(mame_file *f, const char *gamename, co
 		flac_file.decoded_size = 0;		
 
 		// Allocate space for the data.
-		flac_file.rawdata = auto_malloc(f_length);
+		flac_file.rawdata = malloc(f_length);
 
 		// Read the sample data in.
 		mame_fread(f, flac_file.rawdata, f_length);
@@ -411,9 +411,9 @@ static struct GameSample *read_wav_sample(mame_file *f, const char *gamename, co
 		}
 
 		if (b_data == 1)
-			result = auto_malloc(sizeof(struct GameSample) + (flac_file.total_samples * (flac_file.bits_per_sample / 8)));
+			result = malloc(sizeof(struct GameSample) + (flac_file.total_samples * (flac_file.bits_per_sample / 8)));
 		else
-			result = auto_malloc(sizeof(struct GameSample));
+			result = malloc(sizeof(struct GameSample));
 
 		strcpy(result->gamename, gamename);
 		strcpy(result->filename, filename);
