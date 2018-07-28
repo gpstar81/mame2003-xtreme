@@ -119,6 +119,8 @@ void sample_stop(int channel)
 	}
 
 	mixer_stop_sample(channel + firstchannel);
+	//respect samples being disabled
+	if (!options.use_samples) return;
 
 	if (Machine->samples->sample[c_sample] != NULL) {
 		if (Machine->samples->sample[c_sample]->b_decoded == 1) {
