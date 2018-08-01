@@ -157,7 +157,7 @@ static WRITE_HANDLER( toffy_bankswitch_w )
 	ddragon_scrolly_hi = ( ( data & 0x02 ) << 7 );
 	ddragon_scrollx_hi = ( ( data & 0x01 ) << 8 );
 
-//	flip_screen_set(~data & 0x04);
+/*	flip_screen_set(~data & 0x04);*/
 
 	/* bit 3 unknown */
 
@@ -174,7 +174,7 @@ static WRITE_HANDLER( darktowr_bankswitch_w )
 	ddragon_scrolly_hi = ( ( data & 0x02 ) << 7 );
 	ddragon_scrollx_hi = ( ( data & 0x01 ) << 8 );
 
-//	flip_screen_set(~data & 0x04);
+/*	flip_screen_set(~data & 0x04);*/
 
 	/* bit 3 unknown */
 
@@ -184,8 +184,8 @@ static WRITE_HANDLER( darktowr_bankswitch_w )
 		cpu_set_irq_line( 1, sprite_irq, (sprite_irq == IRQ_LINE_NMI) ? PULSE_LINE : HOLD_LINE );
 
 	darktowr_bank=(data & 0xe0) >> 5;
-//	cpu_setbank( 1,&RAM[ 0x10000 + ( 0x4000 * ( ( data & 0xe0) >> 5 ) ) ] );
-//	logerror("Bank %05x %02x %02x\n",activecpu_get_pc(),darktowr_bank,data);
+/*	cpu_setbank( 1,&RAM[ 0x10000 + ( 0x4000 * ( ( data & 0xe0) >> 5 ) ) ] );*/
+/*	log_cb(RETRO_LOG_ERROR, LOGPRE "Bank %05x %02x %02x\n",activecpu_get_pc(),darktowr_bank,data);*/
 }
 
 static READ_HANDLER( darktowr_bank_r )
@@ -194,12 +194,12 @@ static READ_HANDLER( darktowr_bank_r )
 
 	/* MCU is mapped into main cpu memory as a bank */
 	if (darktowr_bank==4) {
-		logerror("BankRead %05x %08x\n",activecpu_get_pc(),offset);
+		log_cb(RETRO_LOG_ERROR, LOGPRE "BankRead %05x %08x\n",activecpu_get_pc(),offset);
 		if (offset==0x1401 || offset==1) {
 			return darktowr_mcu_ports[0];
 		}
 
-		logerror("Unmapped mcu bank read %04x\n",offset);
+		log_cb(RETRO_LOG_ERROR, LOGPRE "Unmapped mcu bank read %04x\n",offset);
 		return 0xff;
 	}
 
@@ -209,20 +209,20 @@ static READ_HANDLER( darktowr_bank_r )
 static WRITE_HANDLER( darktowr_bank_w )
 {
 	if (darktowr_bank==4) {
-		logerror("BankWrite %05x %08x %08x\n",activecpu_get_pc(),offset,data);
+		log_cb(RETRO_LOG_ERROR, LOGPRE "BankWrite %05x %08x %08x\n",activecpu_get_pc(),offset,data);
 
 		if (offset==0x1400 || offset==0) {
 			int bitSwappedData=BITSWAP8(data,0,1,2,3,4,5,6,7);
 
 			darktowr_mcu_ports[1]=bitSwappedData;
 
-			logerror("MCU PORT 1 -> %04x (from %04x)\n",bitSwappedData,data);
+			log_cb(RETRO_LOG_ERROR, LOGPRE "MCU PORT 1 -> %04x (from %04x)\n",bitSwappedData,data);
 			return;
 		}
 		return;
 	}
 
-	logerror("ROM write! %04x %02x\n",offset,data);
+	log_cb(RETRO_LOG_ERROR, LOGPRE "ROM write! %04x %02x\n",offset,data);
 }
 
 static READ_HANDLER( darktowr_mcu_r )
@@ -232,7 +232,7 @@ static READ_HANDLER( darktowr_mcu_r )
 
 static WRITE_HANDLER( darktowr_mcu_w )
 {
-	logerror("McuWrite %05x %08x %08x\n",activecpu_get_pc(),offset,data);
+	log_cb(RETRO_LOG_ERROR, LOGPRE "McuWrite %05x %08x %08x\n",activecpu_get_pc(),offset,data);
 	darktowr_mcu_ports[offset]=data;
 }
 
@@ -262,7 +262,7 @@ static WRITE_HANDLER( ddragon_interrupt_w )
 
 static READ_HANDLER( ddragon_hd63701_internal_registers_r )
 {
-	logerror("%04x: read %d\n",activecpu_get_pc(),offset);
+	log_cb(RETRO_LOG_ERROR, LOGPRE "%04x: read %d\n",activecpu_get_pc(),offset);
 	return 0;
 }
 
@@ -300,7 +300,8 @@ static READ_HANDLER( port4_r )
 static READ_HANDLER( ddragon_spriteram_r )
 {
         /* Double Dragon crash fix - see notes above */
-	if (offset == 0x49 && activecpu_get_pc() == 0x6261 && ddragon_spriteram[offset]== 0x1f)
+	/* if (offset == 0x49 && activecpu_get_pc() == 0x6261 && ddragon_spriteram[offset]== 0x1f) */
+	   if (offset==0x49 && ddragon_spriteram[offset]==0x1f)
 	    return 0x1;
 	
 	return ddragon_spriteram[offset];
@@ -923,14 +924,14 @@ static INTERRUPT_GEN( ddragon_interrupt )
 static MACHINE_DRIVER_START( ddragon )
 
 	/* basic machine hardware */
- 	MDRV_CPU_ADD(HD6309, 3579545)	/* 3.579545 MHz */
+ 	MDRV_CPU_ADD(HD6309, 3579545 * 2)/* 3.579545 MHz */
 	MDRV_CPU_MEMORY(readmem,writemem)
 	MDRV_CPU_VBLANK_INT(ddragon_interrupt,272)
 
-	MDRV_CPU_ADD(HD63701, 3579545 / 3) /* This divider seems correct by comparison to real board */
+        MDRV_CPU_ADD(HD63701, (3579545 / 3) * 2) /* This divider seems correct by comparison to real board */
 	MDRV_CPU_MEMORY(sub_readmem,sub_writemem)
 
- 	MDRV_CPU_ADD(HD6309, 3579545)
+ 	MDRV_CPU_ADD(HD6309, 3579545 * 2)
  	MDRV_CPU_FLAGS(CPU_AUDIO_CPU)
 	MDRV_CPU_MEMORY(sound_readmem,sound_writemem)
 
@@ -1035,7 +1036,7 @@ static MACHINE_DRIVER_START( ddragon2 )
 	MDRV_CPU_MEMORY(dd2_readmem,dd2_writemem)
 	MDRV_CPU_VBLANK_INT(ddragon_interrupt,272)
 
-	MDRV_CPU_ADD(Z80,12000000 / 3) /* 4 MHz */
+	MDRV_CPU_ADD(Z80, 12000000 / 3) /* 4 MHz */
 	MDRV_CPU_MEMORY(dd2_sub_readmem,dd2_sub_writemem)
 
 	MDRV_CPU_ADD(Z80, 3579545)
@@ -1066,7 +1067,7 @@ MACHINE_DRIVER_END
 static MACHINE_DRIVER_START( toffy )
 
 	/* basic machine hardware */
-	MDRV_CPU_ADD(M6809,3579545) // 12 MHz / 2 or 3.579545 ?
+	MDRV_CPU_ADD(M6809,3579545) /* 12 MHz / 2 or 3.579545 ?*/
 	MDRV_CPU_MEMORY(readmem,toffy_writemem)
 	MDRV_CPU_VBLANK_INT(ddragon_interrupt,272)
 
@@ -1363,18 +1364,18 @@ ROM_START( stoffy )
 	ROM_RELOAD( 0x10000, 0x10000 )
 
 	ROM_REGION( 0x10000, REGION_CPU2, 0 ) /* Sound CPU? */
-	ROM_LOAD( "u142.1", 0x00000, 0x10000, CRC(541bd7f0) SHA1(3f0097f5877eae50651f94d46d7dd9127037eb6e) ) // same as 'toffy'
+	ROM_LOAD( "u142.1", 0x00000, 0x10000, CRC(541bd7f0) SHA1(3f0097f5877eae50651f94d46d7dd9127037eb6e) ) /* same as 'toffy'*/
 
 	ROM_REGION( 0x10000, REGION_GFX1, 0 ) /* GFX? */
 	ROM_LOAD( "u35.7", 0x00000, 0x10000, CRC(83735d25) SHA1(d82c046db0112d7d2877339652b2111f12513a4f) )
 
 	ROM_REGION( 0x20000, REGION_GFX3, 0 ) /* GFX */
-	ROM_LOAD( "u78.4", 0x00000, 0x10000, CRC(9743a74d) SHA1(876696c5e88e58e6e44671c33a4c140be02a941e) ) // 0
-	ROM_LOAD( "u77.3", 0x10000, 0x10000, CRC(f267109a) SHA1(679d2147c79636796dda850345c04ad8a9daa6af) ) // 0
+	ROM_LOAD( "u78.4", 0x00000, 0x10000, CRC(9743a74d) SHA1(876696c5e88e58e6e44671c33a4c140be02a941e) ) /* 0*/
+	ROM_LOAD( "u77.3", 0x10000, 0x10000, CRC(f267109a) SHA1(679d2147c79636796dda850345c04ad8a9daa6af) ) /* 0*/
 
 	ROM_REGION( 0x20000, REGION_GFX2, 0 ) /* GFX */
-	ROM_LOAD( "u80.5", 0x00000, 0x10000, CRC(ff190865) SHA1(245e69651d0161fcb416bba8f743602b4ee83139) ) // 1 | should be u80.6 ?
-	ROM_LOAD( "u79.5", 0x10000, 0x10000, CRC(333d5b8a) SHA1(d3573db87e2318c144ee9ace6c975a70fc96f4c4) ) // 1
+	ROM_LOAD( "u80.5", 0x00000, 0x10000, CRC(ff190865) SHA1(245e69651d0161fcb416bba8f743602b4ee83139) ) /* 1 | should be u80.6 ?*/
+	ROM_LOAD( "u79.5", 0x10000, 0x10000, CRC(333d5b8a) SHA1(d3573db87e2318c144ee9ace6c975a70fc96f4c4) ) /* 1*/
 ROM_END
 
 ROM_START( ddungeon )
@@ -1396,12 +1397,12 @@ ROM_START( ddungeon )
 	ROM_LOAD( "dd6.bin", 0x00000, 0x08000, CRC(057588ca) SHA1(d4a5dd3ea8cf455b54657473d4d52ab5e838ae15) )
 
 	ROM_REGION( 0x20000, REGION_GFX2, 0 ) /* GFX */
-	ROM_LOAD( "dd-7r.bin", 0x00000, 0x08000, CRC(50d6ab5d) SHA1(4c9cbd72d38b631ea2ca231045ef3f3e11cc7c07) ) // 1
-	ROM_LOAD( "dd-7k.bin", 0x10000, 0x08000, CRC(43264ad8) SHA1(74f031d6179390bc4fa99f4929a6886db8c2b510) ) // 1
+	ROM_LOAD( "dd-7r.bin", 0x00000, 0x08000, CRC(50d6ab5d) SHA1(4c9cbd72d38b631ea2ca231045ef3f3e11cc7c07) ) /* 1*/
+	ROM_LOAD( "dd-7k.bin", 0x10000, 0x08000, CRC(43264ad8) SHA1(74f031d6179390bc4fa99f4929a6886db8c2b510) ) /* 1*/
 
 	ROM_REGION( 0x20000, REGION_GFX3, 0 ) /* GFX */
-	ROM_LOAD( "dd-6b.bin", 0x00000, 0x08000, CRC(3deacae9) SHA1(6663f054ed3eed50c5cacfa5d22d465dfb179964) ) // 0
-	ROM_LOAD( "dd-7c.bin", 0x10000, 0x08000, CRC(5a2f31eb) SHA1(1b85533443e148adb2a9c2c09c43cbf2c35c86bc) ) // 0
+	ROM_LOAD( "dd-6b.bin", 0x00000, 0x08000, CRC(3deacae9) SHA1(6663f054ed3eed50c5cacfa5d22d465dfb179964) ) /* 0*/
+	ROM_LOAD( "dd-7c.bin", 0x10000, 0x08000, CRC(5a2f31eb) SHA1(1b85533443e148adb2a9c2c09c43cbf2c35c86bc) ) /* 0*/
 
 	ROM_REGION( 0x20000, REGION_SOUND1, 0 ) /* adpcm samples */
 	ROM_LOAD( "21j-6",        0x00000, 0x10000, CRC(34755de3) SHA1(57c06d6ce9497901072fa50a92b6ed0d2d4d6528) )
