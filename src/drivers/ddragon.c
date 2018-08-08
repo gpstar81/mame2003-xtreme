@@ -66,6 +66,8 @@ conversion kit which could be applied to a bootleg double dragon :-p?
 #include "cpu/z80/z80.h"
 #include "vidhrdw/generic.h"
 
+
+int  m_ddragon_sub_port = 0;
 /* from vidhrdw */
 extern unsigned char *ddragon_bgvideoram,*ddragon_fgvideoram;
 extern int ddragon_scrollx_hi, ddragon_scrolly_hi;
@@ -138,6 +140,7 @@ static MACHINE_INIT( ddragon )
 	dd_sub_cpu_busy = 0x10;
 	adpcm_idle[0] = adpcm_idle[1] = 1;
 	snd_cpu = 2;
+	m_ddragon_sub_port = 0;
 }
 
 static MACHINE_INIT( toffy )
@@ -514,17 +517,19 @@ static READ_HANDLER( ddragon_hd63701_internal_registers_r )
 	return 0;
 }
 
+
 static WRITE_HANDLER( ddragon_hd63701_internal_registers_w )
 {
-	/* I don't know why port 0x17 is used..  Doesn't seem to be a standard MCU port */
-	if (offset==0x17) {
-		/* This is a guess, but makes sense.. The mcu definitely interrupts the main cpu.
-		I don't know what bit is the assert and what is the clear though (in comparison
-		it's quite obvious from the Double Dragon 2 code, below). */
-		if (data&3) {
-			cpu_set_irq_line(0,M6809_IRQ_LINE,ASSERT_LINE);
+	
+	if (offset == 0x17)
+	{
+		if ((data & 0x1) == 0)
 			cpu_set_irq_line(1,sprite_irq, CLEAR_LINE );
-		}
+
+		if (!(m_ddragon_sub_port & 0x2) && (data & 0x2))
+			cpu_set_irq_line(0,M6809_IRQ_LINE,ASSERT_LINE);
+
+		m_ddragon_sub_port = data;	
 	}
 }
 
