@@ -298,6 +298,7 @@ static WRITE_HANDLER( ddragon_interrupt_w )
 			int o_max_samples = 23;
 			int sa_left = 0;
 			int sa_right = 1;
+			int sa_volume = 40;
 			bool sa_loop = 1; // --> 1 == loop, 0 == do not loop.
 			bool sa_play_sample = false;
 			bool sa_play_original = false;
@@ -392,6 +393,7 @@ static WRITE_HANDLER( ddragon_interrupt_w )
 
 				// Credits.
 				case 0x6:
+					sa_volume = 100;
 					sa_loop = 0;
 					ddragon_stage = 5;
 					ddragon_current_music = 5;
@@ -452,14 +454,14 @@ static WRITE_HANDLER( ddragon_interrupt_w )
 
 				// Determine how we should mix these samples together.
 				if(sample_playing(0) == 0 && sample_playing(1) == 1) { // Right channel only. Lets make it play in both speakers.
-					sample_set_stereo_volume(1, 100, 100);
+					sample_set_stereo_volume(1, sa_volume, sa_volume);
 				}
 				else if(sample_playing(0) == 1 && sample_playing(1) == 0) { // Left channel only. Lets make it play in both speakers.
-					sample_set_stereo_volume(0, 100, 100);
+					sample_set_stereo_volume(0, sa_volume, sa_volume);
 				}
 				else if(sample_playing(0) == 1 && sample_playing(1) == 1) { // Both left and right channels. Lets make them play in there respective speakers.
-					sample_set_stereo_volume(0, 100, 0);
-					sample_set_stereo_volume(1, 0, 100);
+					sample_set_stereo_volume(0, sa_volume, 0);
+					sample_set_stereo_volume(1, 0, sa_volume);
 				}
 				else if(sample_playing(0) == 0 && sample_playing(1) == 0 && ddragon_do_nothing == false) { // No sample playing, revert to the default sound.
 					sa_play_original = false;
