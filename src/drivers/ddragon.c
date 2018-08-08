@@ -277,7 +277,7 @@ static WRITE_HANDLER( ddragon_hd63701_internal_registers_w )
 	if (offset == 0x17)
 	{
 		if ((data & 0x1) == 0)
-			cpu_set_irq_line(0,M6809_IRQ_LINE,ASSERT_LINE);
+			cpu_set_irq_line(1,sprite_irq, CLEAR_LINE );
 
 		if (!(m_ddragon_sub_port & 0x2) && (data & 0x2))
 			cpu_set_irq_line(0,M6809_IRQ_LINE,ASSERT_LINE);
