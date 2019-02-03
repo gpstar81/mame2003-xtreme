@@ -25,7 +25,8 @@ void sample_start(int channel,int samplenum,int loop)
 		return;
 	}
 
-	if (Machine->samples->sample[samplenum] != NULL) {
+	if (Machine->samples->sample[samplenum] != NULL) 
+	{
 		if (Machine->samples->sample[samplenum]->b_decoded == 0)
 		{
 			// Lets decode this sample before playing it.
@@ -39,26 +40,27 @@ void sample_start(int channel,int samplenum,int loop)
 
 			if (channel == 1)
 				rightSampleNum = samplenum;
-						
-			if (Machine->samples->sample[samplenum]->resolution == 8 )
-			{
-				logerror("play 8 bit sample %d, channel %d\n",samplenum,channel);
-				mixer_play_sample(firstchannel + channel,
-						Machine->samples->sample[samplenum]->data,
-						Machine->samples->sample[samplenum]->length,
-						Machine->samples->sample[samplenum]->smpfreq,
-						loop);
-			}
-			else
-			{
-				logerror("play 16 bit sample %d, channel %d\n",samplenum,channel);
-				mixer_play_sample_16(firstchannel + channel,
-						(short *) Machine->samples->sample[samplenum]->data,
-						Machine->samples->sample[samplenum]->length,
-						Machine->samples->sample[samplenum]->smpfreq,
-						loop);
-			}
 		}
+
+		if (Machine->samples->sample[samplenum]->resolution == 8 )
+		{
+			logerror("play 8 bit sample %d, channel %d\n",samplenum,channel);
+			mixer_play_sample(firstchannel + channel,
+			Machine->samples->sample[samplenum]->data,
+			Machine->samples->sample[samplenum]->length,
+			Machine->samples->sample[samplenum]->smpfreq,
+			loop);
+		}
+		else
+		{
+			logerror("play 16 bit sample %d, channel %d\n",samplenum,channel);
+			mixer_play_sample_16(firstchannel + channel,
+			(short *) Machine->samples->sample[samplenum]->data,
+			Machine->samples->sample[samplenum]->length,
+			Machine->samples->sample[samplenum]->smpfreq,
+			loop);
+		}
+
 	}
 }
 
