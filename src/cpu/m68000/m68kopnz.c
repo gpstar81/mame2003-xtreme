@@ -6233,7 +6233,7 @@ void m68k_op_suba_16_ai(void)
 {
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst - MAKE_INT_16(OPER_AY_AI_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst - src);
 }
 
 
@@ -6241,7 +6241,7 @@ void m68k_op_suba_16_pi(void)
 {
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst - MAKE_INT_16(OPER_AY_PI_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst - src);
 }
 
 
@@ -6249,7 +6249,7 @@ void m68k_op_suba_16_pd(void)
 {
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst - MAKE_INT_16(OPER_AY_PD_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst - src);
 }
 
 
@@ -6257,7 +6257,7 @@ void m68k_op_suba_16_di(void)
 {
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst - MAKE_INT_16(OPER_AY_DI_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst - src);
 }
 
 
@@ -6265,7 +6265,7 @@ void m68k_op_suba_16_ix(void)
 {
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst - MAKE_INT_16(OPER_AY_IX_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst - src);
 }
 
 
@@ -6273,7 +6273,7 @@ void m68k_op_suba_16_aw(void)
 {
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst - MAKE_INT_16(OPER_AW_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst - src);
 }
 
 
@@ -6281,7 +6281,7 @@ void m68k_op_suba_16_al(void)
 {
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst - MAKE_INT_16(OPER_AL_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst - src);
 }
 
 
@@ -6289,7 +6289,7 @@ void m68k_op_suba_16_pcdi(void)
 {
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst - MAKE_INT_16(OPER_PCDI_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst - src);
 }
 
 
@@ -6297,7 +6297,7 @@ void m68k_op_suba_16_pcix(void)
 {
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst - MAKE_INT_16(OPER_PCIX_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst - src);
 }
 
 
@@ -6305,7 +6305,7 @@ void m68k_op_suba_16_i(void)
 {
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst - MAKE_INT_16(OPER_I_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst - src);
 }
 
 
