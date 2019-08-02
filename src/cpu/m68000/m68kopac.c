@@ -1125,81 +1125,91 @@ void m68k_op_adda_16_a(void)
 
 void m68k_op_adda_16_ai(void)
 {
+	signed short src = MAKE_INT_16(OPER_AY_AI_16());
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst + MAKE_INT_16(OPER_AY_AI_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst + src);
 }
 
 
 void m68k_op_adda_16_pi(void)
 {
+	signed short src = MAKE_INT_16(OPER_AY_PI_16());
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst + MAKE_INT_16(OPER_AY_PI_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst + src);
 }
 
 
 void m68k_op_adda_16_pd(void)
 {
+	signed short src = MAKE_INT_16(OPER_AY_PD_16());
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst + MAKE_INT_16(OPER_AY_PD_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst + src);
 }
 
 
 void m68k_op_adda_16_di(void)
 {
+	signed short src = MAKE_INT_16(OPER_AY_DI_16());
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst + MAKE_INT_16(OPER_AY_DI_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst + src);
 }
 
 
 void m68k_op_adda_16_ix(void)
 {
+	signed short src = MAKE_INT_16(OPER_AY_IX_16());
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst + MAKE_INT_16(OPER_AY_IX_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst + src);
 }
 
 
 void m68k_op_adda_16_aw(void)
 {
+	signed short src = MAKE_INT_16(OPER_AW_16());
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst + MAKE_INT_16(OPER_AW_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst + src);
 }
 
 
 void m68k_op_adda_16_al(void)
 {
+	signed short src = MAKE_INT_16(OPER_AL_16());
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst + MAKE_INT_16(OPER_AL_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst + src);
 }
 
 
 void m68k_op_adda_16_pcdi(void)
 {
+	signed short src = MAKE_INT_16(OPER_PCDI_16());
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst + MAKE_INT_16(OPER_PCDI_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst + src);
 }
 
 
 void m68k_op_adda_16_pcix(void)
 {
+	signed short src = MAKE_INT_16(OPER_PCIX_16());
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst + MAKE_INT_16(OPER_PCIX_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst + src);
 }
 
 
 void m68k_op_adda_16_i(void)
 {
+	signed short src = MAKE_INT_16(OPER_I_16());
 	uint* r_dst = &AX;
 
-	*r_dst = MASK_OUT_ABOVE_32(*r_dst + MAKE_INT_16(OPER_I_16()));
+	*r_dst = MASK_OUT_ABOVE_32(*r_dst + src);
 }
 
 
