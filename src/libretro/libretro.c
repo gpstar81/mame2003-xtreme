@@ -256,10 +256,10 @@ static void update_variables(void)
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) || var.value)
    {
-      sample_rate = atoi(var.value);
+      options.samplerate = atoi(var.value);
    }
    else
-      sample_rate = 48000;
+      options.samplerate = 48000;
 
    var.value = NULL;
    var.key = "mame2003-cheats";
@@ -339,7 +339,11 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 {
   mame2003_video_get_geometry(&info->geometry);
   info->timing.fps = Machine->drv->frames_per_second;
-  info->timing.sample_rate = sample_rate;
+  if ( Machine->drv->frames_per_second * 1000 < options.samplerate)
+    info->timing.sample_rate = 22050;
+
+  else 
+    info->timing.sample_rate = options.samplerate;
 }
 
 static void check_system_specs(void)
@@ -489,9 +493,6 @@ void retro_run (void)
    }
 
    mame_frame();
-
-   audio_batch_cb(XsoundBuffer, Machine->sample_rate / Machine->drv->frames_per_second);
-
 }
 
 
@@ -559,8 +560,6 @@ bool retro_load_game(const struct retro_game_info *game)
         
     
         // Set all options before starting the game
-        options.samplerate = sample_rate;
-
         options.vector_resolution_multiplier = 2; 
         options.antialias = 1; // 1 or 0
         options.beam = 2; //use 2.f  if using a decimal point 1|1.2|1.4|1.6|1.8|2|2.5|3|4|5|6|7|8|9|10|11|12 only works with antialas on
@@ -674,6 +673,86 @@ bool retro_unserialize(const void * data, size_t size)
 	}
 
 	return false;
+}
+
+static float              delta_samples;
+int                       samples_per_frame = 0;
+int                       orig_samples_per_frame =0;
+short*                    samples_buffer;
+short*                    conversion_buffer;
+int                       usestereo = 1;
+
+int osd_start_audio_stream(int stereo)
+{
+    if ( Machine->drv->frames_per_second * 1000 < options.samplerate)
+      Machine->sample_rate=22050;
+
+    else
+      Machine->sample_rate = options.samplerate;
+  
+  delta_samples = 0.0f;
+  usestereo = stereo ? 1 : 0;
+
+  /* determine the number of samples per frame */
+  samples_per_frame = Machine->sample_rate / Machine->drv->frames_per_second;
+  orig_samples_per_frame = samples_per_frame;
+
+  if (Machine->sample_rate == 0) return 0;
+
+  samples_buffer = (short *) calloc(samples_per_frame+16, 2 + usestereo * 2);
+  if (!usestereo) conversion_buffer = (short *) calloc(samples_per_frame+16, 4);
+  
+  return samples_per_frame;
+}
+
+
+int osd_update_audio_stream(INT16 *buffer)
+{
+	int i,j;
+	if ( Machine->sample_rate !=0 && buffer )
+	{
+   		memcpy(samples_buffer, buffer, samples_per_frame * (usestereo ? 4 : 2));
+		if (usestereo)
+			audio_batch_cb(samples_buffer, samples_per_frame);
+		else
+		{
+			for (i = 0, j = 0; i < samples_per_frame; i++)
+        		{
+				conversion_buffer[j++] = samples_buffer[i];
+				conversion_buffer[j++] = samples_buffer[i];
+		        }
+         		audio_batch_cb(conversion_buffer,samples_per_frame);
+		}	
+		
+			
+		//process next frame
+			
+		if ( samples_per_frame  != orig_samples_per_frame ) samples_per_frame = orig_samples_per_frame;
+		
+		// dont drop any sample frames some games like mk will drift with time
+
+		delta_samples += (Machine->sample_rate / Machine->drv->frames_per_second) - orig_samples_per_frame;
+		if ( delta_samples >= 1.0f )
+		{
+		
+			int integer_delta = (int)delta_samples;
+			if (integer_delta <= 16 )
+                        {
+				log_cb(RETRO_LOG_DEBUG,"sound: Delta added value %d added to frame\n",integer_delta);
+				samples_per_frame += integer_delta;
+			}
+			else if(integer_delta >= 16) log_cb(RETRO_LOG_INFO, "sound: Delta not added to samples_per_frame too large integer_delta:%d\n", integer_delta);
+			else log_cb(RETRO_LOG_DEBUG,"sound(delta) no contitions met\n");	
+			delta_samples -= integer_delta;
+
+		}
+	}
+        return samples_per_frame;
+}
+
+
+void osd_stop_audio_stream(void)
+{
 }
 
 
