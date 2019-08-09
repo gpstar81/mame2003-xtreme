@@ -888,48 +888,96 @@ WRITE16_HANDLER( pwrinst2_vctrl_1_w )	{ vctrl_w(cave_vctrl_1, offset, data, mem_
 WRITE16_HANDLER( pwrinst2_vctrl_2_w )	{ vctrl_w(cave_vctrl_2, offset, data, mem_mask); }
 WRITE16_HANDLER( pwrinst2_vctrl_3_w )	{ vctrl_w(cave_vctrl_3, offset, data, mem_mask); }
 
+static data16_t *data_rom;
+
 static MEMORY_READ16_START( pwrinst2_readmem )
-	{ 0x000000, 0x1fffff, MRA16_ROM					},	// ROM
-	{ 0x400000, 0x40ffff, MRA16_RAM					},	// RAM
-	{ 0x500000, 0x500001, input_port_0_word_r		},	// Inputs
-	{ 0x500002, 0x500003, input_port_1_word_r		},	//
-	{ 0x800000, 0x807fff, MRA16_RAM					},	// Layer 2
-	{ 0x880000, 0x887fff, MRA16_RAM					},	// Layer 0
-	{ 0x900000, 0x907fff, MRA16_RAM					},	// Layer 1
-	{ 0x980000, 0x987fff, MRA16_RAM					},	// Layer 3
-	{ 0xa00000, 0xa07fff, MRA16_RAM					},	// Sprites
-	{ 0xa08000, 0xa0ffff, MRA16_RAM					},	// Sprites?
-	{ 0xa10000, 0xa1ffff, MRA16_RAM					},	// Sprites?
-/**/{ 0xb00000, 0xb00005, MRA16_RAM					},	// Layer 2 Control
-/**/{ 0xb80000, 0xb80005, MRA16_RAM					},	// Layer 0 Control
-/**/{ 0xc00000, 0xc00005, MRA16_RAM					},	// Layer 1 Control
-/**/{ 0xc80000, 0xc80005, MRA16_RAM					},	// Layer 3 Control
-	{ 0xa80000, 0xa8007f, donpachi_videoregs_r		},	// Video Regs
-	{ 0xd80000, 0xd80001, MRA16_NOP					},	// ? From Sound CPU
-	{ 0xe80000, 0xe80001, pwrinst2_eeprom_r			},	// EEPROM
-	{ 0xf00000, 0xf04fff, MRA16_RAM					},	// Palette
+	{ 0x000000, 0x1fffff, MRA16_ROM					},	/* ROM*/
+	{ 0x400000, 0x40ffff, MRA16_RAM					},	/* RAM*/
+	{ 0x500000, 0x500001, input_port_0_word_r		},	/* Inputs*/
+	{ 0x500002, 0x500003, input_port_1_word_r		},	/**/
+	{ 0x600000, 0x6fffff, MRA16_ROM                 }, 	/* extra data ROM space */
+	{ 0x800000, 0x807fff, MRA16_RAM					},	/* Layer 2*/
+	{ 0x880000, 0x887fff, MRA16_RAM					},	/* Layer 0*/
+	{ 0x900000, 0x907fff, MRA16_RAM					},	/* Layer 1*/
+	{ 0x980000, 0x987fff, MRA16_RAM					},	/* Layer 3*/
+	{ 0xa00000, 0xa07fff, MRA16_RAM					},	/* Sprites*/
+	{ 0xa08000, 0xa0ffff, MRA16_RAM					},	/* Sprites?*/
+	{ 0xa10000, 0xa1ffff, MRA16_RAM					},	/* Sprites?*/
+/**/{ 0xb00000, 0xb00005, MRA16_RAM					},	/* Layer 2 Control*/
+/**/{ 0xb80000, 0xb80005, MRA16_RAM					},	/* Layer 0 Control*/
+/**/{ 0xc00000, 0xc00005, MRA16_RAM					},	/* Layer 1 Control*/
+/**/{ 0xc80000, 0xc80005, MRA16_RAM					},	/* Layer 3 Control*/
+	{ 0xa80000, 0xa8007f, donpachi_videoregs_r		},	/* Video Regs*/
+	{ 0xd80000, 0xd80001, soundlatch_ack_r			},	/* From Sound CPU*/
+	{ 0xe80000, 0xe80001, pwrinst2_eeprom_r			},	/* EEPROM*/
+	{ 0xf00000, 0xf04fff, MRA16_RAM					},	/* Palette*/
 MEMORY_END
 
 static MEMORY_WRITE16_START( pwrinst2_writemem )
-	{ 0x000000, 0x1fffff, MWA16_ROM							},	// ROM
-	{ 0x400000, 0x40ffff, MWA16_RAM							},	// RAM
-	{ 0x700000, 0x700001, cave_eeprom_msb_w					},	// EEPROM
-	{ 0x800000, 0x807fff, cave_vram_2_w,     &cave_vram_2	},	// Layer 2
-	{ 0x880000, 0x887fff, cave_vram_0_w,     &cave_vram_0	},	// Layer 0
-	{ 0x900000, 0x907fff, cave_vram_1_w,     &cave_vram_1	},	// Layer 1
-	{ 0x980000, 0x987fff, cave_vram_3_8x8_w, &cave_vram_3	},	// Layer 3
-	{ 0xa00000, 0xa07fff, MWA16_RAM, &spriteram16, &spriteram_size	},	// Sprites
-	{ 0xa08000, 0xa0ffff, MWA16_RAM							},	// Sprites?
-	{ 0xa10000, 0xa1ffff, MWA16_RAM							},	// Sprites?
-	{ 0xa80000, 0xa8007f, MWA16_RAM, &cave_videoregs		},	// Video Regs
-	{ 0xb00000, 0xb00005, pwrinst2_vctrl_2_w, &cave_vctrl_2			},	// Layer 2 Control
-	{ 0xb80000, 0xb80005, pwrinst2_vctrl_0_w, &cave_vctrl_0			},	// Layer 0 Control
-	{ 0xc00000, 0xc00005, pwrinst2_vctrl_1_w, &cave_vctrl_1			},	// Layer 1 Control
-	{ 0xc80000, 0xc80005, pwrinst2_vctrl_3_w, &cave_vctrl_3			},	// Layer 3 Control
-	{ 0xe00000, 0xe00001, sound_cmd_w						},	// To Sound CPU
-	{ 0xf00000, 0xf04fff, paletteram16_xGGGGGRRRRRBBBBB_word_w, &paletteram16 },	// Palette
+	{ 0x000000, 0x1fffff, MWA16_ROM							},	/* ROM*/
+	{ 0x400000, 0x40ffff, MWA16_RAM							},	/* RAM*/
+	{ 0x600000, 0x6fffff, MWA16_ROM, &data_rom              }, 	/* extra data ROM space */
+	{ 0x700000, 0x700001, cave_eeprom_msb_w					},	/* EEPROM*/
+	{ 0x800000, 0x807fff, cave_vram_2_w,     &cave_vram_2	},	/* Layer 2*/
+	{ 0x880000, 0x887fff, cave_vram_0_w,     &cave_vram_0	},	/* Layer 0*/
+	{ 0x900000, 0x907fff, cave_vram_1_w,     &cave_vram_1	},	/* Layer 1*/
+	{ 0x980000, 0x987fff, cave_vram_3_8x8_w, &cave_vram_3	},	/* Layer 3*/
+	{ 0xa00000, 0xa07fff, MWA16_RAM, &spriteram16, &spriteram_size	},	/* Sprites*/
+	{ 0xa08000, 0xa0ffff, MWA16_RAM							},	/* Sprites?*/
+	{ 0xa10000, 0xa1ffff, MWA16_RAM							},	/* Sprites?*/
+	{ 0xa80000, 0xa8007f, MWA16_RAM, &cave_videoregs		},	/* Video Regs*/
+	{ 0xb00000, 0xb00005, pwrinst2_vctrl_2_w, &cave_vctrl_2			},	/* Layer 2 Control*/
+	{ 0xb80000, 0xb80005, pwrinst2_vctrl_0_w, &cave_vctrl_0			},	/* Layer 0 Control*/
+	{ 0xc00000, 0xc00005, pwrinst2_vctrl_1_w, &cave_vctrl_1			},	/* Layer 1 Control*/
+	{ 0xc80000, 0xc80005, pwrinst2_vctrl_3_w, &cave_vctrl_3			},	/* Layer 3 Control*/
+	{ 0xe00000, 0xe00001, sound_cmd_w						},	/* To Sound CPU*/
+	{ 0xf00000, 0xf04fff, paletteram16_xGGGGGRRRRRBBBBB_word_w, &paletteram16 },	/* Palette*/
 MEMORY_END
 
+
+static MEMORY_READ16_START( plegends_readmem )
+	{ 0x000000, 0x1fffff, MRA16_ROM					},	/* ROM */
+	{ 0x400000, 0x40ffff, MRA16_RAM					},	/* RAM */
+	{ 0x500000, 0x500001, input_port_0_word_r		},	/* Inputs */
+	{ 0x500002, 0x500003, input_port_1_word_r		},  /**/
+	{ 0x600000, 0x6fffff, MRA16_ROM                 }, 	/* extra data ROM space */
+	{ 0x800000, 0x807fff, MRA16_RAM					},	/* Layer 2 */
+	{ 0x880000, 0x887fff, MRA16_RAM					},	/* Layer 0 */
+	{ 0x900000, 0x907fff, MRA16_RAM					},	/* Layer 1 */
+	{ 0x980000, 0x987fff, MRA16_RAM					},	/* Layer 3 */
+	{ 0xa00000, 0xa07fff, MRA16_RAM					},	/* Sprites */
+	{ 0xa08000, 0xa0ffff, MRA16_RAM					},	/* Sprites? */
+	{ 0xa10000, 0xa1ffff, MRA16_RAM					},	/* Sprites? */
+/**/{ 0xb00000, 0xb00005, MRA16_RAM					},	/* Layer 2 Control */
+/**/{ 0xb80000, 0xb80005, MRA16_RAM					},	/* Layer 0 Control */
+/**/{ 0xc00000, 0xc00005, MRA16_RAM					},	/* Layer 1 Control */
+/**/{ 0xc80000, 0xc80005, MRA16_RAM					},	/* Layer 3 Control */
+	{ 0xa80000, 0xa8007f, donpachi_videoregs_r		},	/* Video Regs */
+	{ 0xd80000, 0xd80001, soundlatch_ack_r			},	/* From Sound CPU */
+	{ 0xe80000, 0xe80001, pwrinst2_eeprom_r			},	/* EEPROM */
+	{ 0xf00000, 0xf04fff, MRA16_RAM					},	/* Palette */
+MEMORY_END
+
+static MEMORY_WRITE16_START( plegends_writemem )
+	{ 0x000000, 0x1fffff, MWA16_ROM							},	/* ROM */
+	{ 0x400000, 0x40ffff, MWA16_RAM							},	/* RAM */
+	{ 0x600000, 0x6fffff, MWA16_ROM, &data_rom              }, 	/* extra data ROM space */
+	{ 0x700000, 0x700001, cave_eeprom_msb_w					},	/* EEPROM */
+	{ 0x800000, 0x807fff, cave_vram_2_w,     &cave_vram_2	},	/* Layer 2 */
+	{ 0x880000, 0x887fff, cave_vram_0_w,     &cave_vram_0	},	/* Layer 0 */
+	{ 0x900000, 0x907fff, cave_vram_1_w,     &cave_vram_1	},	/* Layer 1 */
+	{ 0x980000, 0x987fff, cave_vram_3_8x8_w, &cave_vram_3	},	/* Layer 3 */
+	{ 0xa00000, 0xa07fff, MWA16_RAM, &spriteram16, &spriteram_size	},	/* Sprites */
+	{ 0xa08000, 0xa0ffff, MWA16_RAM							},	/* Sprites? */
+	{ 0xa10000, 0xa1ffff, MWA16_RAM							},	/* Sprites? */
+	{ 0xa80000, 0xa8007f, MWA16_RAM, &cave_videoregs		},	/* Video Regs */
+	{ 0xb00000, 0xb00005, pwrinst2_vctrl_2_w, &cave_vctrl_2			},	/* Layer 2 Control */
+	{ 0xb80000, 0xb80005, pwrinst2_vctrl_0_w, &cave_vctrl_0			},	/* Layer 0 Control */
+	{ 0xc00000, 0xc00005, pwrinst2_vctrl_1_w, &cave_vctrl_1			},	/* Layer 1 Control */
+	{ 0xc80000, 0xc80005, pwrinst2_vctrl_3_w, &cave_vctrl_3			},	/* Layer 3 Control */
+	{ 0xe00000, 0xe00001, sound_cmd_w						},	/* To Sound CPU */
+	{ 0xf00000, 0xf04fff, paletteram16_xGGGGGRRRRRBBBBB_word_w, &paletteram16 },	/* Palette */
+MEMORY_END
 
 /***************************************************************************
 								Sailor Moon
@@ -1276,14 +1324,13 @@ static PORT_READ_START( pwrinst2_sound_readport )
 PORT_END
 
 static PORT_WRITE_START( pwrinst2_sound_writeport )
-	{ 0x00, 0x00, OKIM6295_data_0_w			},	// M6295
-	{ 0x08, 0x08, OKIM6295_data_1_w			},	//
-	{ 0x10, 0x17, pwrinst2_okibank_w		},	// Samples bank
-	{ 0x40, 0x40, YM2203_control_port_0_w	},	// YM2203
-	{ 0x41, 0x41, YM2203_write_port_0_w		},	//
-//	{ 0x50, 0x50, IOWP_NOP		},	// ?? volume
-//	{ 0x51, 0x51, IOWP_NOP		},	// ?? volume
-	{ 0x80, 0x80, pwrinst2_rombank_w		},	// ROM bank
+	{ 0x00, 0x00, OKIM6295_data_0_w			},	/* M6295*/
+	{ 0x08, 0x08, OKIM6295_data_1_w			},	/**/
+	{ 0x10, 0x17, pwrinst2_okibank_w		},	/* Samples bank*/
+	{ 0x40, 0x40, YM2203_control_port_0_w	},	/* YM2203*/
+	{ 0x41, 0x41, YM2203_write_port_0_w		},	/**/
+	{ 0x50, 0x50, soundlatch_ack_w			},  /* To Main CPU */
+	{ 0x80, 0x80, pwrinst2_rombank_w		},	/* ROM bank*/
 PORT_END
 
 
@@ -2390,6 +2437,42 @@ static MACHINE_DRIVER_START( pwrinst2 )
 	MDRV_SOUND_ADD(OKIM6295, okim6295_intf_pwrinst2)
 MACHINE_DRIVER_END
 
+static MACHINE_DRIVER_START( plegends )
+
+	/* basic machine hardware */
+	MDRV_CPU_ADD(M68000, 16000000)
+	MDRV_CPU_MEMORY(plegends_readmem,plegends_writemem)
+	MDRV_CPU_VBLANK_INT(cave_interrupt,1)
+
+	MDRV_CPU_ADD(Z80,16000000 / 2)
+	MDRV_CPU_FLAGS(CPU_AUDIO_CPU)	/* ? */
+	MDRV_CPU_MEMORY(pwrinst2_sound_readmem,pwrinst2_sound_writemem)
+	MDRV_CPU_PORTS(pwrinst2_sound_readport,pwrinst2_sound_writeport)
+
+	MDRV_FRAMES_PER_SECOND(15625/271.5)
+	MDRV_VBLANK_DURATION(DEFAULT_60HZ_VBLANK_DURATION)
+
+	MDRV_MACHINE_INIT(cave)
+	MDRV_NVRAM_HANDLER(cave)
+
+	/* video hardware */
+	MDRV_VIDEO_ATTRIBUTES(VIDEO_TYPE_RASTER)
+	MDRV_SCREEN_SIZE(0x200, 240)
+	MDRV_VISIBLE_AREA(0x70, 0x70 + 0x140-1, 0, 240-1)
+	MDRV_GFXDECODE(pwrinst2_gfxdecodeinfo)
+	MDRV_PALETTE_LENGTH(0x5000/2)
+	MDRV_COLORTABLE_LENGTH(0x8000+0x2800)
+
+	MDRV_PALETTE_INIT(pwrinst2)
+	MDRV_VIDEO_START(cave_4_layers)
+	MDRV_VIDEO_UPDATE(cave)
+
+	/* sound hardware */
+	MDRV_SOUND_ATTRIBUTES(SOUND_SUPPORTS_STEREO)
+	MDRV_SOUND_ADD(YM2203, ym2203_intf_pwrinst2)
+	MDRV_SOUND_ADD(OKIM6295, okim6295_intf_pwrinst2)
+MACHINE_DRIVER_END
+
 
 /***************************************************************************
 						Sailor Moon / Air Gallet
@@ -3271,6 +3354,9 @@ ROM_START( pwrinst2 )
 	ROM_LOAD16_BYTE( "g02.u44", 0x000001, 0x80000, CRC(8f6f6637) SHA1(024b12c0fe40e27c79e38bd7601a9183a62d75fd) )
 	ROM_LOAD16_BYTE( "g02.u43", 0x100000, 0x80000, CRC(178e3d24) SHA1(926234f4196a5d5e3bd1438abbf73355f2c65b06) )
 	ROM_LOAD16_BYTE( "g02.u42", 0x100001, 0x80000, CRC(a0b4ee99) SHA1(c6df4aa2543b04d8bda7683f503e5eb763e506af) )
+	
+	ROM_REGION16_BE( 0x100000, REGION_USER1, ROMREGION_ERASE00 )	/* 68000 extra data roms */
+    /* not used */
 
 	ROM_REGION( 0x24000, REGION_CPU2, 0 )		/* Z80 code */
 	ROM_LOAD( "g02.u3a", 0x00000, 0x0c000, CRC(ebea5e1e) SHA1(4d3af9e5f29d0c1b26563f51250039c9e8bd3735) )
@@ -3773,6 +3859,9 @@ DRIVER_INIT( pwrinst2 )
 		rom[0xD46C/2] = 0xD482;			// kurara dash fix  0xd400 -> 0xd482
 	}
 #endif
+
+	/* set up data Roms */
+	memcpy(data_rom, memory_region(REGION_USER1), memory_region_length(REGION_USER1));
 }
 
 DRIVER_INIT( plegends )
@@ -3803,6 +3892,9 @@ DRIVER_INIT( plegends )
 	cave_spritetype = 3;
 	cave_kludge = 4;
 	time_vblank_irq = 2000;	/**/
+	
+	/* set up data ROMs */
+	memcpy(data_rom, memory_region(REGION_USER1), memory_region_length(REGION_USER1));
 	
 }
 
@@ -3856,7 +3948,7 @@ DRIVER_INIT( uopoko )
 ***************************************************************************/
 
 GAME( 1994, pwrinst2, 0,        pwrinst2, metmqstr, pwrinst2, ROT0,   "Atlus/Cave",                           "Power Instinct 2 (USA)" )
-GAME( 1995, plegends, 0,        pwrinst2, metmqstr, plegends, ROT0,   "Atlus/Cave",                           "Power Instinct Legends (USA)" ) /* 95.06.20 */
+GAME( 1995, plegends, 0,        plegends, metmqstr, plegends, ROT0,   "Atlus/Cave",                           "Power Instinct Legends (USA)" ) /* 95.06.20 */
 GAME( 1994, mazinger, 0,        mazinger, mazinger, mazinger, ROT90,  "Banpresto/Dynamic Pl. Toei Animation", "Mazinger Z"                 ) // region in eeprom
 GAME( 1995, donpachi, 0,        donpachi, cave,     ddonpach, ROT270, "Atlus/Cave",                           "DonPachi (US)"              )
 GAME( 1995, donpachj, donpachi, donpachi, cave,     ddonpach, ROT270, "Atlus/Cave",                           "DonPachi (Japan)"           )
