@@ -589,6 +589,8 @@ static void neogeo_custom_memory(void)
 	/* we write protect a SRAM location so it cannot be set to 1 */
 	sram_protection_hack = ~0;
 	if (	!strcmp(Machine->gamedrv->name,"fatfury3") ||
+			!strcmp(Machine->gamedrv->name,"samsho5") ||
+			!strcmp(Machine->gamedrv->name,"samsh5sp") ||
 			!strcmp(Machine->gamedrv->name,"samsho3") ||
 			!strcmp(Machine->gamedrv->name,"samsho4") ||
 			!strcmp(Machine->gamedrv->name,"aof3") ||
