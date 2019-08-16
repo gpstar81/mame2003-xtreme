@@ -6808,7 +6808,155 @@ static WRITE16_HANDLER( mv0_bankswitch_w )
 
 	neogeo_set_cpu1_second_bank( bank_addr );
 }
+/* SVC Chaos */
+static void svcchaos_px_decrypt( void )
+{
+	const unsigned char xor1[ 0x20 ] = {
+		0x3b, 0x6a, 0xf7, 0xb7, 0xe8, 0xa9, 0x20, 0x99, 0x9f, 0x39, 0x34, 0x0c, 0xc3, 0x9a, 0xa5, 0xc8,
+		0xb8, 0x18, 0xce, 0x56, 0x94, 0x44, 0xe3, 0x7a, 0xf7, 0xdd, 0x42, 0xf0, 0x18, 0x60, 0x92, 0x9f,
+	};
 
+	const unsigned char xor2[ 0x20 ] = {
+		0x69, 0x0b, 0x60, 0xd6, 0x4f, 0x01, 0x40, 0x1a, 0x9f, 0x0b, 0xf0, 0x75, 0x58, 0x0e, 0x60, 0xb4,
+		0x14, 0x04, 0x20, 0xe4, 0xb9, 0x0d, 0x10, 0x89, 0xeb, 0x07, 0x30, 0x90, 0x50, 0x0e, 0x20, 0x26,
+	};
+
+	int i;
+	int ofst;
+	UINT8 *rom, *buf;
+
+	rom = memory_region( REGION_CPU1 );
+
+	for( i = 0; i < 0x100000; i++ ){
+		rom[ i ] ^= xor1[ (i % 0x20) ];
+	}
+
+	for( i = 0x100000; i < 0x800000; i++ ){
+		rom[ i ] ^= xor2[ (i % 0x20) ];
+	}
+
+	for( i = 0x100000; i < 0x800000; i += 4 ){
+		UINT16 *rom16 = (UINT16*)&rom[ i + 1 ];
+		*rom16 = BITSWAP16( *rom16, 15, 14, 13, 12, 10, 11, 8, 9, 6, 7, 4, 5, 3, 2, 1, 0 );
+	}
+
+	buf = malloc( 0x800000 );
+	memcpy( buf, rom, 0x800000 );
+
+	for( i = 0; i < 0x0100000 / 0x10000; i++ ){
+		ofst = (i & 0xf0) + BITSWAP8( (i & 0x0f), 7, 6, 5, 4, 2, 3, 0, 1 );
+		memcpy( &rom[ i * 0x10000 ], &buf[ ofst * 0x10000 ], 0x10000 );
+	}
+
+	for( i = 0x100000; i < 0x800000; i += 0x100 ){
+		ofst = (i & 0xf000ff) + 
+			   ((i & 0x000f00) ^ 0x00a00) +
+			   (BITSWAP8( ((i & 0x0ff000) >> 12), 4, 5, 6, 7, 1, 0, 3, 2 ) << 12);
+
+		memcpy( &rom[ i ], &buf[ ofst ], 0x100 );
+	}
+
+	free( buf );
+
+	buf = malloc( 0x800000 );
+	memcpy( buf, rom, 0x800000 );
+	memcpy( &rom[ 0x100000 ], &buf[ 0x700000 ], 0x100000 );
+	memcpy( &rom[ 0x200000 ], &buf[ 0x100000 ], 0x600000 );
+	free( buf );
+}
+
+static void svcchaos_gfx_decrypt( void )
+{
+	const unsigned char xor[ 4 ] = {
+		0x34, 0x21, 0xc4, 0xe9,
+	};
+
+	int i;
+	int ofst;
+
+	int rom_size = memory_region_length( REGION_GFX3 );
+	UINT8 *rom = memory_region( REGION_GFX3 );
+	UINT8 *buf = malloc( rom_size );
+
+	for( i = 0; i < rom_size; i++ ){
+		rom[ i ] ^= xor[ (i % 4) ];
+	}
+
+	for( i = 0; i < rom_size; i += 4 ){
+		UINT32 *rom32 = (UINT32*)&rom[ i ];
+		*rom32 = BITSWAP32( *rom32, 0x09, 0x0d, 0x13, 0x00, 0x17, 0x0f, 0x03, 0x05,
+									0x04, 0x0c, 0x11, 0x1e, 0x12, 0x15, 0x0b, 0x06,
+									0x1b, 0x0a, 0x1a, 0x1c, 0x14, 0x02, 0x0e, 0x1d,
+									0x18, 0x08, 0x01, 0x10, 0x19, 0x1f, 0x07, 0x16 );
+	}
+
+	memcpy( buf, rom, rom_size );
+
+	for( i = 0; i < rom_size / 4; i++ ){
+		ofst =  BITSWAP24( (i & 0x1fffff), 0x17, 0x16, 0x15, 0x04, 0x0b, 0x0e, 0x08, 0x0c,
+										   0x10, 0x00, 0x0a, 0x13, 0x03, 0x06, 0x02, 0x07,
+										   0x0d, 0x01, 0x11, 0x09, 0x14, 0x0f, 0x12, 0x05 );
+		ofst ^= 0x0c8923;
+		ofst += (i & 0xffe00000);
+
+		memcpy( &rom[ i * 4 ], &buf[ ofst * 4 ], 0x04 );
+	}
+
+	free( buf );
+
+	kof2000_neogeo_gfx_decrypt(0x57);
+
+	rom = memory_region( REGION_GFX1 );
+	rom_size = memory_region_length( REGION_GFX1 );
+
+	for( i = 0; i < rom_size; i++ ){
+		rom[ i ] = BITSWAP8( rom[ i ] ^ 0xd2, 4, 0, 7, 2, 5, 1, 6, 3 );
+	}
+}
+
+static void svcchaos_vx_decrypt( void )
+{
+	const unsigned char xor[ 0x08 ] = {
+		0xc3, 0xfd, 0x81, 0xac, 0x6d, 0xe7, 0xbf, 0x9e
+	};
+
+	int ofst;
+
+	int rom_size = memory_region_length( REGION_SOUND1 );
+	UINT8 *rom = memory_region( REGION_SOUND1 );
+	UINT8 *buf = malloc( rom_size );
+	int i;
+
+	memcpy( buf, rom, rom_size );
+
+	for( i=0;i<rom_size;i++ ){
+		ofst = (i & 0xfefffe) |
+			   ((i & 0x010000) >> 16) |
+			   ((i & 0x000001) << 16);
+
+		ofst ^= 0xc2000;
+
+		rom[ ofst ] = buf[ ((i + 0xffac28) & 0xffffff) ] ^ xor[ (ofst & 0x07) ];
+	}
+
+	free( buf );
+}
+
+DRIVER_INIT( svcchaos )
+{
+	svcchaos_px_decrypt();
+	svcchaos_gfx_decrypt();
+	svcchaos_vx_decrypt();
+
+	neogeo_fix_bank_type = 2;
+	init_neogeo();
+	install_mem_read16_handler(0, 0x2fe000, 0x2fffdf, MRA16_RAM );
+	install_mem_write16_handler(0, 0x2fe000, 0x2fffdf, MWA16_RAM );
+	install_mem_read16_handler(0, 0x2fffe0, 0x2fffef, mv0_prot_r );
+	install_mem_write16_handler(0, 0x2fffe0, 0x2fffef, mv0_prot_w );
+	install_mem_read16_handler(0, 0x2ffff0, 0x2fffff, mv0_bankswitch_r );
+	install_mem_write16_handler(0, 0x2ffff0, 0x2fffff, mv0_bankswitch_w );
+}
 
 /***************************************************************************
  svcboot
