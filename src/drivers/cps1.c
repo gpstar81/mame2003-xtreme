@@ -656,8 +656,6 @@ static WRITE16_HANDLER( cps1_sound_command_w )
 			}
 			case 0x1a:
 			{
-				int a = 0;
-
 				sample_stop(0);
 				sample_stop(1);
 
@@ -707,8 +705,6 @@ static WRITE16_HANDLER( cps1_sound_command_w )
 			}
 			case 0x1f:
 			{
-				int a = 0;
-
 				sample_stop(0);
 				sample_stop(1);
 
@@ -858,8 +854,6 @@ static WRITE16_HANDLER( cps1_sound_command_w )
 			case 0x8d:
 			{
 				// there's no stop music command after the ending music plays for some of them so we have to make sure that we're still not stuck in fading mode
-				int a = 0;
-
 				sample_stop(0);
 				sample_stop(1);
 
