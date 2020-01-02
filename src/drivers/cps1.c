@@ -658,10 +658,8 @@ static WRITE16_HANDLER( cps1_sound_command_w )
 			{
 				int a = 0;
 
-				for(a = 0; a <= 92; a++) {
-					sample_stop(0);
-					sample_stop(1);
-				}
+				sample_stop(0);
+				sample_stop(1);
 
 				fadingMusic = false;
 				fadeMusicVolume = 1.0f;
@@ -711,10 +709,8 @@ static WRITE16_HANDLER( cps1_sound_command_w )
 			{
 				int a = 0;
 
-				for(a = 0; a <= 92; a++) {
-					sample_stop(0);
-					sample_stop(1);
-				}
+				sample_stop(0);
+				sample_stop(1);
 
 				fadingMusic = false;
 				fadeMusicVolume = 1.0f;
@@ -864,10 +860,8 @@ static WRITE16_HANDLER( cps1_sound_command_w )
 				// there's no stop music command after the ending music plays for some of them so we have to make sure that we're still not stuck in fading mode
 				int a = 0;
 
-				for(a = 0; a <= 92; a++) {
-					sample_stop(0);
-					sample_stop(1);
-				}
+				sample_stop(0);
+				sample_stop(1);
 
 				fadingMusic = false;
 				// special ending
