@@ -143,8 +143,8 @@ else ifeq ($(platform), rpi2)
    CFLAGS += $(fpic)
    LDFLAGS += $(fpic) -shared -Wl,--version-script=link.T
    PLATCFLAGS += -Dstricmp=strcasecmp
-   PLATCFLAGS += -marm -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard
-   PLATCFLAGS += -fomit-frame-pointer -ffast-math
+   PLATCFLAGS += -marm -mcpu=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard 
+   PLATCFLAGS += -fomit-frame-pointer -ffast-math -fsigned-char
    CXXFLAGS = $(CFLAGS) -fno-rtti -fno-exceptions
    CPU_ARCH := arm
    ARM = 1
@@ -159,6 +159,45 @@ else ifeq ($(platform), rpi3)
    CXXFLAGS = $(CFLAGS) -fno-rtti -fno-exceptions
    CPU_ARCH := arm
    ARM = 1
+
+# Amlogic S905/S905X/S912 (AMLGXBB/AMLGXL/AMLGXM) e.g. Khadas VIM1/2 / S905X2 (AMLG12A) & S922X/A311D (AMLG12B) e.g. Khadas VIM3 - 32-bit userspace
+
+else ifneq (,$(findstring AMLG,$(platform)))
+	TARGET := $(TARGET_NAME)_libretro.so
+	fpic := -fPIC
+  LDFLAGS += $(fpic) -shared -Wl,--version-script=link.T
+	CFLAGS += -Ofast \
+	-flto=4 -fuse-linker-plugin \
+	-fdata-sections -ffunction-sections -Wl,--gc-sections \
+	-fno-stack-protector -fno-ident -fomit-frame-pointer \
+	-falign-functions=1 -falign-jumps=1 -falign-loops=1 \
+	-fno-unwind-tables -fno-asynchronous-unwind-tables -fno-unroll-loops \
+	-fmerge-all-constants -fno-math-errno -fsigned-char \
+	-marm -march=armv8-a+crc -mfloat-abi=hard -mfpu=neon-fp-armv8
+	 
+ifneq (,$(findstring AMLG12B,$(platform)))
+	CFLAGS += -mtune=cortex-a73.cortex-a53
+else
+	CFLAGS += -mtune=cortex-a53
+endif
+
+	CXXFLAGS += $(CFLAGS)
+	CPPFLAGS += $(CFLAGS)
+	ASFLAGS += $(CFLAGS)
+	HAVE_NEON = 1
+	ARCH = arm
+	BUILTIN_GPU = neon
+	USE_DYNAREC = 1
+	CPU_ARCH := arm
+	ARM = 1
+	# If gcc is 5.0 or later
+	ifeq ($(shell echo `$(CC) -dumpversion` ">= 5" | bc -l), 1)
+	LDFLAGS += -static-libgcc -static-libstdc++
+	endif
+#######################################
+   
+   
+   
 else ifeq ($(platform), android-armv7)
    TARGET = $(TARGET_NAME)_libretro_android.so
 

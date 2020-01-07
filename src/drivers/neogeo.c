@@ -212,6 +212,7 @@ removal of hacks to change region / get info memory card manager
 
 /* values probed by Razoola from the real board */
 #define RASTER_LINES 264
+/* VBLANK should fire on line 248 */
 #define RASTER_COUNTER_START 0x1f0	/* value assumed right after vblank */
 #define RASTER_COUNTER_RELOAD 0x0f8	/* value assumed after 0x1ff */
 #define RASTER_LINE_RELOAD (0x200 - RASTER_COUNTER_START)
@@ -312,12 +313,12 @@ static INTERRUPT_GEN( neogeo_interrupt )
 		/* Animation counter */
 		if (!(irq2control & IRQ2CTRL_AUTOANIM_STOP))
 		{
-			if (fc>neogeo_frame_counter_speed)
+			if (fc++>neogeo_frame_counter_speed)	/* fixed animation speed */
 			{
 				fc=0;
 				neogeo_frame_counter++;
 			}
-			fc++;
+			/* fc++; */
 		}
 
 		if (irq2control & IRQ2CTRL_ENABLE)
@@ -400,12 +401,12 @@ static void raster_interrupt(int busy)
 		/* Animation counter */
 		if (!(irq2control & IRQ2CTRL_AUTOANIM_STOP))
 		{
-			if (fc>neogeo_frame_counter_speed)
+			if (fc++>neogeo_frame_counter_speed)	/* fixed animation speed */
 			{
 				fc=0;
 				neogeo_frame_counter++;
 			}
-			fc++;
+			/* fc++; */
 		}
 
 		/* return a standard vblank interrupt */
@@ -1368,7 +1369,7 @@ static MACHINE_DRIVER_START( neogeo )
 
 	/* using a framerate of 59 will fix the sync of the kof98 video / sound however
 	   using it would be a kludge as 60 has been measured using the hardware */
-	MDRV_FRAMES_PER_SECOND(60) /* verified */
+	MDRV_FRAMES_PER_SECOND(15625.0 / 264) /* verified with real PCB */
 	MDRV_VBLANK_DURATION(DEFAULT_60HZ_VBLANK_DURATION)
 
 	MDRV_MACHINE_INIT(neogeo)
@@ -6073,41 +6074,7 @@ ROM_START( svcboot )
 	ROM_LOAD16_BYTE( "svc-c8.bin", 0x3000001, 0x800000, CRC(366deee5) SHA1(d477ad7a5987fd6c7ef2c1680fbb7c884654590e) )
 ROM_END
 
-ROM_START( mslug5 ) /* Encrypted Set */
-	ROM_REGION( 0x800000, REGION_CPU1, 0 )
-	ROM_LOAD32_WORD_SWAP( "268-p1cr.bin", 0x000000, 0x400000, CRC(d0466792) SHA1(880819933d997fab398f91061e9dbccb959ae8a1) )
-	ROM_LOAD32_WORD_SWAP( "268-p2cr.bin", 0x000002, 0x400000, CRC(fbf6b61e) SHA1(9ec743d5988b5e3183f37f8edf45c72a8c0c893e) )
 
-	/* The Encrypted Boards do _not_ have an s1 rom, data for it comes from the Cx ROMs */
-	ROM_REGION( 0x20000, REGION_GFX1, 0 )
-	ROM_FILL( 0x000000, 0x20000, 0 )
-	ROM_REGION( 0x20000, REGION_GFX2, 0 )
-	ROM_LOAD( "sfix.sfx", 0x000000, 0x20000, CRC(354029fc) SHA1(4ae4bf23b4c2acff875775d4cbff5583893ce2a1) )
-
-	ROM_REGION( 0x40000, REGION_USER4, 0 )
-	/* Encrypted, we load it here for reference and replace with decrypted ROM */
-	ROM_LOAD( "268-m1.bin", 0x00000, 0x10000, CRC(58b107d0) SHA1(cc7fe66ff4f9c026cde4df06f86c848eb21f7af8) )
-	/* Decrypted */
-	NEO_BIOS_SOUND_64K( "268-m1_decrypted.bin",  CRC(3c0655a7) SHA1(ae839d4c2b87a7aa3dd8e5caddc43eb75ee9b732) )
-
-	ROM_REGION( 0x1000000, REGION_SOUND1, ROMREGION_SOUNDONLY )
-	/* Encrypted */
-	ROM_LOAD( "268-v1c.bin", 0x000000, 0x800000, CRC(ae31d60c) SHA1(c42285cf4e52fea74247860813e826df5aa7600a) )
-	ROM_LOAD( "268-v2c.bin", 0x800000, 0x800000, CRC(c40613ed) SHA1(af889570304e2867d7dfea1e94e388c06249fb67) )
-
-	NO_DELTAT_REGION
-
-	ROM_REGION( 0x4000000, REGION_GFX3, 0 )
-	/* Encrypted */
-	ROM_LOAD16_BYTE( "268-c1c.bin", 0x0000000, 0x800000, CRC(ab7c389a) SHA1(025a188de589500bf7637fa8e7a37ab24bf4312e) ) /* Plane 0,1 */
-	ROM_LOAD16_BYTE( "268-c2c.bin", 0x0000001, 0x800000, CRC(3560881b) SHA1(493d218c92290b4770024d6ee2917c4022753b07) ) /* Plane 2,3 */
-	ROM_LOAD16_BYTE( "268-c3c.bin", 0x1000000, 0x800000, CRC(3af955ea) SHA1(cf36b6ae9b0d12744b17cb7a928399214de894be) ) /* Plane 0,1 */
-	ROM_LOAD16_BYTE( "268-c4c.bin", 0x1000001, 0x800000, CRC(c329c373) SHA1(5073d4079958a0ef5426885af2c9e3178f37d5e0) ) /* Plane 2,3 */
-	ROM_LOAD16_BYTE( "268-c5c.bin", 0x2000000, 0x800000, CRC(959c8177) SHA1(889bda7c65d71172e7d89194d1269561888fe789) ) /* Plane 0,1 */
-	ROM_LOAD16_BYTE( "268-c6c.bin", 0x2000001, 0x800000, CRC(010a831b) SHA1(aec140661e3ae35d264df416478ba15188544d91) ) /* Plane 2,3 */
-	ROM_LOAD16_BYTE( "268-c7c.bin", 0x3000000, 0x800000, CRC(6d72a969) SHA1(968dd9a4d1209b770b9b85ea6532fa24d262a262) ) /* Plane 0,1 */
-	ROM_LOAD16_BYTE( "268-c8c.bin", 0x3000001, 0x800000, CRC(551d720e) SHA1(ebf69e334fcaba0fda6fd432fd0970283a365d12) ) /* Plane 2,3 */
-ROM_END
 
 ROM_START( samsho5 ) /* Encrypted Set */
 	ROM_REGION( 0x800000, REGION_CPU1, 0 )
@@ -6122,7 +6089,7 @@ ROM_START( samsho5 ) /* Encrypted Set */
 
 	ROM_REGION( 0x80000, REGION_USER4, 0 )
 	/* Encrypted, we load it here for reference and replace with decrypted ROM */
-	ROM_LOAD( "270-m1.bin", 0x00000, 0x40000, CRC(e4a5ab0c) SHA1(dcf74be51593a9c96607f3f776a1210b43df4ac9) )
+	ROM_LOAD( "270-m1.bin", 0x00000, 0x80000, CRC(49c9901a) SHA1(2623e9765a0eba58fee2de72851e9dc502344a3d) )
 	/* Decrypted */
 	NEO_BIOS_SOUND_256K( "270-m1_decrypted.bin", CRC(e94a5e2b) SHA1(53ef2ad6583060af69fdde73576e09ba88affa55) ) /* not a 100% match for encrypted version */
 
@@ -6180,6 +6147,43 @@ ROM_START( samsh5sp ) /* Encrypted Set */
 	ROM_LOAD16_BYTE( "272-c7.bin", 0x3000000, 0x800000, CRC(1417b742) SHA1(dfe35eb4bcd022d2f2dc544ccbbb77078f08c0aa) ) /* Plane 0,1 */
 	ROM_LOAD16_BYTE( "272-c8.bin", 0x3000001, 0x800000, CRC(d49773cd) SHA1(cd8cf3b762d381c1f8f12919579c84a7ef7efb3f) ) /* Plane 2,3 */
 ROM_END
+
+ROM_START( mslug5 ) /* Encrypted Set */
+	ROM_REGION( 0x800000, REGION_CPU1, 0 )
+	ROM_LOAD32_WORD_SWAP( "268-p1cr.bin", 0x000000, 0x400000, CRC(d0466792) SHA1(880819933d997fab398f91061e9dbccb959ae8a1) )
+	ROM_LOAD32_WORD_SWAP( "268-p2cr.bin", 0x000002, 0x400000, CRC(fbf6b61e) SHA1(9ec743d5988b5e3183f37f8edf45c72a8c0c893e) )
+
+	/* The Encrypted Boards do _not_ have an s1 rom, data for it comes from the Cx ROMs */
+	ROM_REGION( 0x20000, REGION_GFX1, 0 )
+	ROM_FILL( 0x000000, 0x20000, 0 )
+	ROM_REGION( 0x20000, REGION_GFX2, 0 )
+	ROM_LOAD( "sfix.sfx", 0x000000, 0x20000, CRC(354029fc) SHA1(4ae4bf23b4c2acff875775d4cbff5583893ce2a1) )
+
+	ROM_REGION( 0x40000, REGION_USER4, 0 )
+	/* Encrypted, we load it here for reference and replace with decrypted ROM 
+	ROM_LOAD( "268-m1.bin", 0x00000, 0x80000, CRC(4a5a6e0e) SHA1(df0f660f2465e1db7be5adfcaf5e88ad61a74a42) )
+	 Decrypted */
+	NEO_BIOS_SOUND_64K( "268-m1_decrypted.bin",  CRC(3c0655a7) SHA1(ae839d4c2b87a7aa3dd8e5caddc43eb75ee9b732) )
+
+	ROM_REGION( 0x1000000, REGION_SOUND1, ROMREGION_SOUNDONLY )
+	/* Encrypted */
+	ROM_LOAD( "268-v1c.bin", 0x000000, 0x800000, CRC(ae31d60c) SHA1(c42285cf4e52fea74247860813e826df5aa7600a) )
+	ROM_LOAD( "268-v2c.bin", 0x800000, 0x800000, CRC(c40613ed) SHA1(af889570304e2867d7dfea1e94e388c06249fb67) )
+
+	NO_DELTAT_REGION
+
+	ROM_REGION( 0x4000000, REGION_GFX3, 0 )
+	/* Encrypted */
+	ROM_LOAD16_BYTE( "268-c1c.bin", 0x0000000, 0x800000, CRC(ab7c389a) SHA1(025a188de589500bf7637fa8e7a37ab24bf4312e) ) /* Plane 0,1 */
+	ROM_LOAD16_BYTE( "268-c2c.bin", 0x0000001, 0x800000, CRC(3560881b) SHA1(493d218c92290b4770024d6ee2917c4022753b07) ) /* Plane 2,3 */
+	ROM_LOAD16_BYTE( "268-c3c.bin", 0x1000000, 0x800000, CRC(3af955ea) SHA1(cf36b6ae9b0d12744b17cb7a928399214de894be) ) /* Plane 0,1 */
+	ROM_LOAD16_BYTE( "268-c4c.bin", 0x1000001, 0x800000, CRC(c329c373) SHA1(5073d4079958a0ef5426885af2c9e3178f37d5e0) ) /* Plane 2,3 */
+	ROM_LOAD16_BYTE( "268-c5c.bin", 0x2000000, 0x800000, CRC(959c8177) SHA1(889bda7c65d71172e7d89194d1269561888fe789) ) /* Plane 0,1 */
+	ROM_LOAD16_BYTE( "268-c6c.bin", 0x2000001, 0x800000, CRC(010a831b) SHA1(aec140661e3ae35d264df416478ba15188544d91) ) /* Plane 2,3 */
+	ROM_LOAD16_BYTE( "268-c7c.bin", 0x3000000, 0x800000, CRC(6d72a969) SHA1(968dd9a4d1209b770b9b85ea6532fa24d262a262) ) /* Plane 0,1 */
+	ROM_LOAD16_BYTE( "268-c8c.bin", 0x3000001, 0x800000, CRC(551d720e) SHA1(ebf69e334fcaba0fda6fd432fd0970283a365d12) ) /* Plane 2,3 */
+ROM_END
+
 
 /******************************************************************************/
 
@@ -6804,108 +6808,7 @@ static WRITE16_HANDLER( mv0_bankswitch_w )
 
 	neogeo_set_cpu1_second_bank( bank_addr );
 }
-
-static void kof2003_px_decrypt( void )
-{
-	const unsigned char xor2[ 0x20 ] = {
-		0xb4, 0x0f, 0x40, 0x6c, 0x38, 0x07, 0xd0, 0x3f, 0x53, 0x08, 0x80, 0xaa, 0xbe, 0x07, 0xc0, 0xfa,
-		0xd0, 0x08, 0x10, 0xd2, 0xf1, 0x03, 0x70, 0x7e, 0x87, 0x0B, 0x40, 0xf6, 0x2a, 0x0a, 0xe0, 0xf9
-	};
-
-	int i;
-	int ofst;
-	UINT8 *rom, *buf;
-
-	rom = memory_region( REGION_CPU1 );
-
-	for( i = 0x100000; i < 0x800000; i++ ){
-		rom[ i ] ^= xor2[ (i % 0x20) ];
-	}
-
-	for( i = 0x100000; i < 0x800000; i += 4 ){
-		UINT16 *rom16 = (UINT16*)&rom[ i + 1 ];
-		*rom16 = BITSWAP16( *rom16, 15, 14, 13, 12, 4, 5, 6, 7, 8, 9, 10, 11, 3, 2, 1, 0 );
-	}
-
-	buf = malloc( 0x800000 );
-	memcpy( buf, rom, 0x800000 );
-
-	for( i = 0; i < 0x0100000 / 0x10000; i++ ){
-		ofst = (i & 0xf0) + BITSWAP8( (i & 0x0f), 7, 6, 5, 4, 1, 0, 3, 2 );
-		memcpy( &rom[ i * 0x10000 ], &buf[ ofst * 0x10000 ], 0x10000 );
-	}
-
-	for( i = 0x100000; i < 0x800000; i += 0x100 ){
-		ofst = (i & 0xf000ff) + 
-			   ((i & 0x000f00) ^ 0x00300) +
-			   (BITSWAP8( ((i & 0x0ff000) >> 12), 4, 5, 6, 7, 1, 0, 3, 2 ) << 12);
-
-		memcpy( &rom[ i ], &buf[ ofst ], 0x100 );
-	}
-
-	free( buf );
-
-	buf = malloc(0x900000);
-	memcpy( buf, rom, 0x900000 );
-
-	memcpy( &rom[0x100000], &buf[0x800000], 0x100000 );
-	memcpy( &rom[0x200000], &buf[0x100000], 0x700000 );
-
-	free(buf);
-}
-
-static void kof2003_sx_decrypt( void )
-{
-	int i;
-	int tx_size = memory_region_length( REGION_GFX1 );
-	int rom_size = memory_region_length( REGION_GFX3 );
-	UINT8 *src;
-	UINT8 *dst;
-
-	src = memory_region( REGION_GFX3 ) + rom_size - 0x1000000 - 0x80000;
-	dst = memory_region( REGION_GFX1 );
-
-	for( i = 0; i < tx_size / 2; i++ ){
-		dst[ i ] = src[ (i & ~0x1f) + ((i & 7) << 2) + ((~i & 8) >> 2) + ((i & 0x10) >> 4) ];
-	}
-
-	src = memory_region( REGION_GFX3 ) + rom_size - 0x80000;
-	dst = memory_region( REGION_GFX1 ) + 0x80000;
-
-	for( i = 0; i < tx_size / 2; i++ ){
-		dst[ i ] = src[ (i & ~0x1f) + ((i & 7) << 2) + ((~i & 8) >> 2) + ((i & 0x10) >> 4) ];
-	}
-
-	dst = memory_region( REGION_GFX1 );
-	for( i = 0; i < tx_size; i++ ){
-		dst[ i ] = BITSWAP8( dst[ i ] ^ 0xd2, 4, 0, 7, 2, 5, 1, 6, 3 );
-	}
-}
-
-DRIVER_INIT( kof2003d )
-{
-	kof2003_px_decrypt();
-	kof2003_sx_decrypt();
-
-	neogeo_fix_bank_type = 2;
-	init_neogeo();
-
-	install_mem_read16_handler(0, 0x2fe000, 0x2fffdf, MRA16_RAM );
-	install_mem_write16_handler(0, 0x2fe000, 0x2fffdf, MWA16_RAM );
-
-	install_mem_read16_handler(0, 0x2fffe0, 0x2fffef, mv0_prot_r );
-	install_mem_write16_handler(0, 0x2fffe0, 0x2fffef, mv0_prot_w );
-
-	install_mem_read16_handler(0, 0x2ffff0, 0x2fffff, mv0_bankswitch_r );
-	install_mem_write16_handler(0, 0x2ffff0, 0x2fffff, mv0_bankswitch_w );
-
-	install_mem_read16_handler(0, 0xc00000, 0xc3ffff, MRA16_BANK3 );  // 256k bios
-}
-
-static UINT16 mv0_prot_offset[ 0x08 ];
-static UINT16 mv0_bankswitch_offset[ 2 ];
-static int mv0_bankswitch_flg;
-
+/* SVC Chaos */
 static void svcchaos_px_decrypt( void )
 {
 	const unsigned char xor1[ 0x20 ] = {
@@ -7055,8 +6958,6 @@ DRIVER_INIT( svcchaos )
 	install_mem_write16_handler(0, 0x2ffff0, 0x2fffff, mv0_bankswitch_w );
 }
 
-
-
 /***************************************************************************
  svcboot
 ***************************************************************************/
@@ -7140,107 +7041,6 @@ DRIVER_INIT( svcboot )
 
 	install_mem_read16_handler( 0, 0x2ffff0, 0x2fffff, mv0_bankswitch_r );
 	install_mem_write16_handler( 0, 0x2ffff0, 0x2fffff, mv0_bankswitch_w );
-}
-
-static UINT16 mv0_bankswitch_offset[ 2 ];
-static int mv0_bankswitch_flg;
-
-static void mslug5_px_decrypt( void )
-{
-	const unsigned char xor1[ 0x20 ] = {
-		0xc2, 0x4b, 0x74, 0xfd, 0x0b, 0x34, 0xeb, 0xd7, 0x10, 0x6d, 0xf9, 0xce, 0x5d, 0xd5, 0x61, 0x29,
-		0xf5, 0xbe, 0x0d, 0x82, 0x72, 0x45, 0x0f, 0x24, 0xb3, 0x34, 0x1b, 0x99, 0xea, 0x09, 0xf3, 0x03,
-	};
-
-	const unsigned char xor2[ 0x20 ] = {
-		0x36, 0x09, 0xb0, 0x64, 0x95, 0x0f, 0x90, 0x42, 0x6e, 0x0f, 0x30, 0xf6, 0xe5, 0x08, 0x30, 0x64,
-		0x08, 0x04, 0x00, 0x2f, 0x72, 0x09, 0xa0, 0x13, 0xc9, 0x0b, 0xa0, 0x3e, 0xc2, 0x00, 0x40, 0x2b,
-	};
-
-	int i;
-	UINT8 *rom, *buf;
-	int ofst;
-
-	rom = memory_region( REGION_CPU1 );
-
-	for( i = 0; i < 0x100000; i++ ){
-		rom[ i ] ^= xor1[ (i % 0x20) ];
-	}
-
-	for( i = 0x100000; i < 0x800000; i++ ){
-		rom[ i ] ^= xor2[ (i % 0x20) ];
-	}
-
-	for( i = 0x100000; i < 0x0800000; i += 4 ){
-		UINT16 *rom16 = (UINT16*)&rom[ i + 1 ];
-		*rom16 = BITSWAP16( *rom16, 15, 14, 13, 12, 10, 11, 8, 9, 6, 7, 4, 5, 3, 2, 1, 0 );
-	}
-
-	buf = malloc( 0x800000 );
-	memcpy( buf, rom, 0x800000 );
-
-	for( i = 0; i < 0x0100000 / 0x10000; i++ ){
-		ofst = (i & 0xf0) + BITSWAP8( (i & 0x0f), 7, 6, 5, 4, 1, 0, 3, 2 );
-		memcpy( &rom[ i * 0x10000 ], &buf[ ofst * 0x10000 ], 0x10000 );
-	}
-
-	for( i = 0x100000; i < 0x800000; i += 0x100 ){
-		ofst = (i & 0xf000ff) + 
-			   ((i & 0x000f00) ^ 0x00700) +
-			   (BITSWAP8( ((i & 0x0ff000) >> 12), 5, 4, 7, 6, 1, 0, 3, 2 ) << 12);
-
-		memcpy( &rom[ i ], &buf[ ofst ], 0x100 );
-	}
-
-	free( buf );
-
-	buf = malloc( 0x800000 );
-	memcpy( buf, rom, 0x800000 );
-	memcpy( &rom[ 0x100000 ], &buf[ 0x700000 ], 0x100000 );
-	memcpy( &rom[ 0x200000 ], &buf[ 0x100000 ], 0x600000 );
-	free( buf );
-}
-
-static void mslug5_vx_decrypt( void )
-{
-	const unsigned char xor[ 0x08 ] = {
-		0xc3, 0xfd, 0x81, 0xac, 0x6d, 0xe7, 0xbf, 0x9e
-	};
-
-	int ofst;
-
-	int rom_size = memory_region_length( REGION_SOUND1 );
-	UINT8 *rom = memory_region( REGION_SOUND1 );
-	UINT8 *buf = malloc( rom_size );
-	int i;
-
-	memcpy( buf, rom, rom_size );
-
-	for( i=0;i<rom_size;i++ ){
-		ofst = (i & 0xfefffe) |
-			   ((i & 0x010000) >> 16) |
-			   ((i & 0x000001) << 16);
-
-		ofst ^= 0x4e001;
-
-		rom[ ofst ] = buf[ ((i + 0xfe2cf6) & 0xffffff) ] ^ xor[ (ofst & 0x07) ];
-	}
-
-	free( buf );
-}
-
-DRIVER_INIT( mslug5 )
-{
-	mslug5_px_decrypt();
-	mslug5_vx_decrypt();
-
-	neogeo_fix_bank_type = 1;
-	kof2000_neogeo_gfx_decrypt(0x19);
-
-	install_mem_write16_handler(0, 0x2ffff0, 0x2ffff3, mv0_bankswitch_w );
-	install_mem_read16_handler(0, 0x2ffff0, 0x2ffff3, mv0_bankswitch_r );
-
-	init_neogeo();
 }
 
 
@@ -7346,6 +7146,204 @@ DRIVER_INIT( samsh5sp )
 	samsh5sp_vx_decrypt();
 	init_neogeo();
 }
+
+static void mslug5_px_decrypt( void )
+{
+	const unsigned char xor1[ 0x20 ] = {
+		0xc2, 0x4b, 0x74, 0xfd, 0x0b, 0x34, 0xeb, 0xd7, 0x10, 0x6d, 0xf9, 0xce, 0x5d, 0xd5, 0x61, 0x29,
+		0xf5, 0xbe, 0x0d, 0x82, 0x72, 0x45, 0x0f, 0x24, 0xb3, 0x34, 0x1b, 0x99, 0xea, 0x09, 0xf3, 0x03,
+	};
+
+	const unsigned char xor2[ 0x20 ] = {
+		0x36, 0x09, 0xb0, 0x64, 0x95, 0x0f, 0x90, 0x42, 0x6e, 0x0f, 0x30, 0xf6, 0xe5, 0x08, 0x30, 0x64,
+		0x08, 0x04, 0x00, 0x2f, 0x72, 0x09, 0xa0, 0x13, 0xc9, 0x0b, 0xa0, 0x3e, 0xc2, 0x00, 0x40, 0x2b,
+	};
+
+	int i;
+	UINT8 *rom, *buf;
+	int ofst;
+
+	rom = memory_region( REGION_CPU1 );
+
+	for( i = 0; i < 0x100000; i++ ){
+		rom[ i ] ^= xor1[ (i % 0x20) ];
+	}
+
+	for( i = 0x100000; i < 0x800000; i++ ){
+		rom[ i ] ^= xor2[ (i % 0x20) ];
+	}
+
+	for( i = 0x100000; i < 0x0800000; i += 4 ){
+		UINT16 *rom16 = (UINT16*)&rom[ i + 1 ];
+		*rom16 = BITSWAP16( *rom16, 15, 14, 13, 12, 10, 11, 8, 9, 6, 7, 4, 5, 3, 2, 1, 0 );
+	}
+
+	buf = malloc( 0x800000 );
+	memcpy( buf, rom, 0x800000 );
+
+	for( i = 0; i < 0x0100000 / 0x10000; i++ ){
+		ofst = (i & 0xf0) + BITSWAP8( (i & 0x0f), 7, 6, 5, 4, 1, 0, 3, 2 );
+		memcpy( &rom[ i * 0x10000 ], &buf[ ofst * 0x10000 ], 0x10000 );
+	}
+
+	for( i = 0x100000; i < 0x800000; i += 0x100 ){
+		ofst = (i & 0xf000ff) + 
+			   ((i & 0x000f00) ^ 0x00700) +
+			   (BITSWAP8( ((i & 0x0ff000) >> 12), 5, 4, 7, 6, 1, 0, 3, 2 ) << 12);
+
+		memcpy( &rom[ i ], &buf[ ofst ], 0x100 );
+	}
+
+	free( buf );
+
+	buf = malloc( 0x800000 );
+	memcpy( buf, rom, 0x800000 );
+	memcpy( &rom[ 0x100000 ], &buf[ 0x700000 ], 0x100000 );
+	memcpy( &rom[ 0x200000 ], &buf[ 0x100000 ], 0x600000 );
+	free( buf );
+}
+
+static void mslug5_vx_decrypt( void )
+{
+	const unsigned char xor[ 0x08 ] = {
+		0xc3, 0xfd, 0x81, 0xac, 0x6d, 0xe7, 0xbf, 0x9e
+	};
+
+	int ofst;
+
+	int rom_size = memory_region_length( REGION_SOUND1 );
+	UINT8 *rom = memory_region( REGION_SOUND1 );
+	UINT8 *buf = malloc( rom_size );
+	int i;
+
+	memcpy( buf, rom, rom_size );
+
+	for( i=0;i<rom_size;i++ ){
+		ofst = (i & 0xfefffe) |
+			   ((i & 0x010000) >> 16) |
+			   ((i & 0x000001) << 16);
+
+		ofst ^= 0x4e001;
+
+		rom[ ofst ] = buf[ ((i + 0xfe2cf6) & 0xffffff) ] ^ xor[ (ofst & 0x07) ];
+	}
+
+	free( buf );
+}
+
+DRIVER_INIT( mslug5 )
+{
+	mslug5_px_decrypt();
+	mslug5_vx_decrypt();
+
+	neogeo_fix_bank_type = 1;
+	kof2000_neogeo_gfx_decrypt(0x19);
+
+	install_mem_write16_handler(0, 0x2ffff0, 0x2ffff3, mv0_bankswitch_w );
+	install_mem_read16_handler(0, 0x2ffff0, 0x2ffff3, mv0_bankswitch_r );
+
+	init_neogeo();
+}
+
+/* kof2003d Init Start */
+static void kof2003_px_decrypt( void )
+{
+	const unsigned char xor2[ 0x20 ] = {
+		0xb4, 0x0f, 0x40, 0x6c, 0x38, 0x07, 0xd0, 0x3f, 0x53, 0x08, 0x80, 0xaa, 0xbe, 0x07, 0xc0, 0xfa,
+		0xd0, 0x08, 0x10, 0xd2, 0xf1, 0x03, 0x70, 0x7e, 0x87, 0x0B, 0x40, 0xf6, 0x2a, 0x0a, 0xe0, 0xf9
+	};
+
+	int i;
+	int ofst;
+	UINT8 *rom, *buf;
+
+	rom = memory_region( REGION_CPU1 );
+
+	for( i = 0x100000; i < 0x800000; i++ ){
+		rom[ i ] ^= xor2[ (i % 0x20) ];
+	}
+
+	for( i = 0x100000; i < 0x800000; i += 4 ){
+		UINT16 *rom16 = (UINT16*)&rom[ i + 1 ];
+		*rom16 = BITSWAP16( *rom16, 15, 14, 13, 12, 4, 5, 6, 7, 8, 9, 10, 11, 3, 2, 1, 0 );
+	}
+
+	buf = malloc( 0x800000 );
+	memcpy( buf, rom, 0x800000 );
+
+	for( i = 0; i < 0x0100000 / 0x10000; i++ ){
+		ofst = (i & 0xf0) + BITSWAP8( (i & 0x0f), 7, 6, 5, 4, 1, 0, 3, 2 );
+		memcpy( &rom[ i * 0x10000 ], &buf[ ofst * 0x10000 ], 0x10000 );
+	}
+
+	for( i = 0x100000; i < 0x800000; i += 0x100 ){
+		ofst = (i & 0xf000ff) + 
+			   ((i & 0x000f00) ^ 0x00300) +
+			   (BITSWAP8( ((i & 0x0ff000) >> 12), 4, 5, 6, 7, 1, 0, 3, 2 ) << 12);
+
+		memcpy( &rom[ i ], &buf[ ofst ], 0x100 );
+	}
+
+	free( buf );
+
+	buf = malloc(0x900000);
+	memcpy( buf, rom, 0x900000 );
+
+	memcpy( &rom[0x100000], &buf[0x800000], 0x100000 );
+	memcpy( &rom[0x200000], &buf[0x100000], 0x700000 );
+
+	free(buf);
+}
+
+static void kof2003_sx_decrypt( void )
+{
+	int i;
+	int tx_size = memory_region_length( REGION_GFX1 );
+	int rom_size = memory_region_length( REGION_GFX3 );
+	UINT8 *src;
+	UINT8 *dst;
+
+	src = memory_region( REGION_GFX3 ) + rom_size - 0x1000000 - 0x80000;
+	dst = memory_region( REGION_GFX1 );
+
+	for( i = 0; i < tx_size / 2; i++ ){
+		dst[ i ] = src[ (i & ~0x1f) + ((i & 7) << 2) + ((~i & 8) >> 2) + ((i & 0x10) >> 4) ];
+	}
+
+	src = memory_region( REGION_GFX3 ) + rom_size - 0x80000;
+	dst = memory_region( REGION_GFX1 ) + 0x80000;
+
+	for( i = 0; i < tx_size / 2; i++ ){
+		dst[ i ] = src[ (i & ~0x1f) + ((i & 7) << 2) + ((~i & 8) >> 2) + ((i & 0x10) >> 4) ];
+	}
+
+	dst = memory_region( REGION_GFX1 );
+	for( i = 0; i < tx_size; i++ ){
+		dst[ i ] = BITSWAP8( dst[ i ] ^ 0xd2, 4, 0, 7, 2, 5, 1, 6, 3 );
+	}
+}
+
+DRIVER_INIT( kof2003d )
+{
+	kof2003_px_decrypt();
+	kof2003_sx_decrypt();
+
+	neogeo_fix_bank_type = 2;
+	
+
+	install_mem_read16_handler( 0, 0x2fe000, 0x2fffdf, MRA16_RAM );
+	install_mem_write16_handler( 0, 0x2fe000, 0x2fffdf, MWA16_RAM );
+
+	install_mem_read16_handler( 0, 0x2fffe0, 0x2fffef, mv0_prot_r );
+	install_mem_write16_handler( 0, 0x2fffe0, 0x2fffef, mv0_prot_w );
+
+	install_mem_read16_handler( 0, 0x2ffff0, 0x2fffff, mv0_bankswitch_r );
+	install_mem_write16_handler( 0, 0x2ffff0, 0x2fffff, mv0_bankswitch_w );
+
+	install_mem_read16_handler( 0, 0xc00000, 0xc3ffff, MRA16_BANK3 );  // 256k bios
+	init_neogeo();
+}
+/* kof2003d Init End */
 
 /******************************************************************************/
 
