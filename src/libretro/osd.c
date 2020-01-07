@@ -253,3 +253,16 @@ void CLIB_DECL osd_die(const char *text, ...)
     * This is only used if a malloc fails in src/cpu/z80/z80.c so not too high a priority */
    abort();
 }
+
+void osd_set_mastervolume(int attenuation)
+{
+}
+
+int osd_get_mastervolume(void)
+{
+	return 0;
+}
+
+void osd_sound_enable(int enable)
+{
+}
